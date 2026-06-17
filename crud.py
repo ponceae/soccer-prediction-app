@@ -1,3 +1,9 @@
+""" 
+
+"""
+
+__author__ = 'Adrien P.'
+
 from models import Team
 from sqlmodel import Session
 
