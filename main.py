@@ -1,7 +1,13 @@
+""" 
+"""
+
+__author__ = 'Adrien P.'
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from sqlmodel import SQLModel, create_engine, Session, select, or_
 
+from crud import get_team_by_id
 from models import Match, Team
 
 sqlite_file_name = 'soccer.db'
@@ -46,20 +52,12 @@ def get_matches():
 @app.get('/teams/{team_id}')
 def get_team(team_id: int):
     with Session(engine) as session:
-        team = session.get(Team, team_id)
-        
-        if not team:
-            raise HTTPException(status_code=404, detail='Team not found')
-    
-        return team
+        return _get_team_or_404(team_id, session)
 
 @app.get('/teams/{team_id}/goals')
 def get_scores(team_id: int):
     with Session(engine) as session:
-        team = session.get(Team, team_id)
-        
-        if not team:
-            raise HTTPException(status_code=404, detail='Team not found')
+        team = _get_team_or_404(team_id, session)
         
         query = select(Match).where(
             or_(Match.home_team_id == team_id, Match.away_team_id == team_id)
@@ -74,4 +72,11 @@ def get_scores(team_id: int):
                 goals += match.away_goals
         
         return {'team': team.name, 'total_goals_scored': goals}
+
+def _get_team_or_404(team_id: int, session: Session):
+    team = get_team_by_id(session, team_id)
     
+    if not team:
+        raise HTTPException(status_code=404, detail='Team not found')
+    
+    return team
