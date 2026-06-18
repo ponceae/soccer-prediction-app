@@ -133,7 +133,11 @@ def get_poisson_value(xg: float) -> list[float]:
     
     return p
 
-def poisson_prediction(session: Session, h_team_id: int, a_team_id: int):
+def poisson_prediction(
+    session: Session, 
+    h_team_id: int, 
+    a_team_id: int
+) -> tuple[float, float, float]:
     """
     Using each team's expected goals, find the probability of each score up to 
     `MAX_GOAL_THRESHOLD` and find the Poisson value of each. 
