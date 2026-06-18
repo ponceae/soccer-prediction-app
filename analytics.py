@@ -45,7 +45,7 @@ def get_team_strengths(
     home and away games.
 
     Args:
-        session (Session): The current working database
+        session (Session): The current working database.
         team_id (int): The id of the team to evaluate.
 
     Returns:
@@ -101,8 +101,8 @@ def get_expected_goals(
 
     Returns:
         (tuple[float, float]): The expected goals:
-            - The xG of the home team.
-            - The xG of the away team.
+            - The xG of the home team
+            - The xG of the away team
     """
     h_home_atk, h_home_def, _, _ = get_team_strengths(session, h_team_id)
     _, _, a_away_atk, a_away_def = get_team_strengths(session, a_team_id)
