@@ -1,9 +1,3 @@
-""" 
-
-"""
-
-__author__ = 'Adrien P.'
-
 from datetime import date
 from sqlmodel import Session
 from models import Match, Team

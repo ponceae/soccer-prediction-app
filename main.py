@@ -1,9 +1,3 @@
-""" 
-The main FastAPI controller for the soccer prediction app.
-"""
-
-__author__ = 'Adrien P.'
-
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from sqlmodel import SQLModel, create_engine, Session, select, or_
@@ -27,10 +21,6 @@ app = FastAPI(title='Poisson Soccer Prediction Model', lifespan=setup_db)
 def home():
     return {'message': 'Soccer Predictor API'}
 
-# ============
-# LIST QUERIES 
-# ============
-
 @app.get('/teams')
 def get_teams():
     with Session(engine) as session:
@@ -46,10 +36,6 @@ def get_matches():
         matches = session.exec(query).all()
         
         return matches
-
-# ==============
-# DETAIL QUERIES
-# ==============
 
 @app.get('/teams/{team_id}')
 def get_team(team_id: int):
@@ -75,20 +61,7 @@ def get_scores(team_id: int):
         
         return {'team': team.name, 'total_goals_scored': goals}
 
-def _get_team_or_404(session: Session, team_id: int):
-    """
-    Helper function that gets a team from the database based off of the team id.
-
-    Args:
-        session (Session): The current working database.
-        team_id (int): The id of the team to get.
-
-    Raises:
-        HTTPException: If the team does not exist in the database.
-
-    Returns:
-        (Team): The team in the database with the specified team id.
-    """
+def _get_team_or_404(session: Session, team_id: int) -> Team:
     team = get_team_by_id(session, team_id)
     
     if not team:

@@ -1,9 +1,3 @@
-"""
-Contains the math for calculating the variables in the Poisson prediction model.
-"""
-
-__author__ = 'Adrien P.'
-
 from sqlmodel import Session, select
 import math
 from models import Match
@@ -11,17 +5,6 @@ from models import Match
 MAX_GOAL_THRESHOLD = 8
 
 def get_league_goal_averages(session: Session) -> tuple[float, float]:
-    """
-    find and Return the total league home and away goal averages.
-    
-    Args:
-        session (Session): The current working database.
-
-    Returns:
-        (tuple[float, float]):
-            - Total league home goal averages
-            - Total league away goal averages
-    """
     matches = session.exec(select(Match)).all()
     total_matches = len(matches)
     
@@ -40,21 +23,6 @@ def get_team_strengths(
     session: Session, 
     team_id: int
 ) -> tuple[float, float, float, float]:
-    """
-    Find and return the attacking and defending strengths of the given team for both
-    home and away games.
-
-    Args:
-        session (Session): The current working database.
-        team_id (int): The id of the team to evaluate.
-
-    Returns:
-        tuple[float, float, float, float]: The team's strengths:
-            - Home attacking strength
-            - Home defending strength
-            - Away attacking strength
-            - Away defending strength
-    """
     league_h_goal_avg, league_a_goal_avg = get_league_goal_averages(session)
 
     h_match_statement = select(Match).where(Match.home_team_id == team_id)
@@ -65,7 +33,10 @@ def get_team_strengths(
     
     total_h_matches = len(h_matches)
     total_a_matches = len(a_matches)
-                
+
+    if not total_h_matches and not total_a_matches:
+        return 0.0, 0.0, 0.0, 0.0
+
     h_goals = sum(m.home_goals for m in h_matches)
     a_goals = sum(m.away_goals for m in a_matches)
     
@@ -91,19 +62,7 @@ def get_expected_goals(
     h_team_id: int, 
     a_team_id
 ) -> tuple[float, float]:
-    """
-    Find and return the expected goal multiplier of the home and away team.
-
-    Args:
-        session (Session): The current working database.
-        h_team_id (int): The id of the home team to evaluate.
-        a_team_id (_type_): The id of the away team to evaluate.
-
-    Returns:
-        (tuple[float, float]): The expected goals:
-            - The xG of the home team
-            - The xG of the away team
-    """
+    
     h_home_atk, h_home_def, _, _ = get_team_strengths(session, h_team_id)
     _, _, a_away_atk, a_away_def = get_team_strengths(session, a_team_id)
     
@@ -115,17 +74,6 @@ def get_expected_goals(
     return home_xg, away_xg
 
 def get_poisson_value(xg: float) -> list[float]:
-    """
-    Calculate the poisson value based off of the given expected goals multiplier
-    and run it `MAX_GOAL_THRESHOLD + 1` times, then add it to the total list
-    of poisson values of the expected goals.
-
-    Args:
-        xg (float): The expected goals multiplier.
-
-    Returns:
-        (list[float]): The list of poisson values.
-    """
     p = []
     
     for i in range(MAX_GOAL_THRESHOLD + 1):
@@ -138,21 +86,6 @@ def poisson_prediction(
     h_team_id: int, 
     a_team_id: int
 ) -> tuple[float, float, float]:
-    """
-    Using each team's expected goals, find the probability of each score up to 
-    `MAX_GOAL_THRESHOLD` and find the Poisson value of each. 
-
-    Args:
-        session (Session): The current working database.
-        h_team_id (int): The id of the home team to evaluate.
-        a_team_id (int): The id of the away team to evaluate.
-
-    Returns:
-        tuple[float, float, float]: The percentages of:
-            - Win
-            - Draw
-            - Loss
-    """
     h_xg, a_xg = get_expected_goals(session, h_team_id, a_team_id)
     
     h_poisson_values = get_poisson_value(h_xg)
