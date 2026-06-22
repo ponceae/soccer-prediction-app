@@ -5,6 +5,7 @@ from models import Match
 MAX_GOAL_THRESHOLD = 8
 
 def get_league_goal_averages(session: Session) -> tuple[float, float]:
+    """Return the league's home and away goal average."""
     matches = session.exec(select(Match)).all()
     total_matches = len(matches)
     
