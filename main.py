@@ -1,14 +1,10 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
-from sqlmodel import SQLModel, create_engine, Session, select, or_
+from sqlmodel import and_, SQLModel, create_engine, Session, select, or_
 
-from analytics import (
-    get_league_goal_averages, 
-    get_team_strengths, 
-    poisson_prediction
-)
+from analytics import Analytics, HomeAwayID
 from crud import get_team_by_id
-from models import Match, Team
+from models import Competition, Match, Season, Team, TeamCompetition
 
 sqlite_file_name = 'soccer.db'
 sqlite_url = f'sqlite:///{sqlite_file_name}'
@@ -28,26 +24,77 @@ def home():
 @app.get('/teams')
 def get_teams():
     with Session(engine) as session:
-        statement = select(Team)
-        teams = session.exec(statement).all()
-        
-        return teams
+        return session.exec(select(Team)).all()
     
 @app.get('/matches')
 def get_matches():
     with Session(engine) as session:
-        statement = select(Match)
-        matches = session.exec(statement).all()
-        
-        return matches
+        return session.exec(select(Match)).all()
 
-@app.get('/teams/{team_id}/league/average_goals')
-def get_league_average_goals(team_id):
+@app.get('/competitions')
+def get_competitions():
     with Session(engine) as session:
-        team = _get_team_or_404(session, team_id)
-        # league = team.league
-        h_lga, a_lga = get_league_goal_averages(session)
-        return {'home_league_goal_avg': h_lga, 'away_league_goal_avg': a_lga}
+        return session.exec(select(Competition)).all()        
+
+@app.get('/seasons')
+def get_seasons():
+    with Session(engine) as session:
+        return session.exec(select(Season)).all()
+
+@app.get('/team_competitions')
+def get_team_competitions():
+    with Session(engine) as session:
+        return session.exec(select(TeamCompetition)).all()
+
+@app.get('/leagues/{competition_id}/{season_id}/goal_averages')
+def get_league_goal_avg(competition_id: int, season_id: int):
+    curr_data = _create_analytic_data(competition_id, season_id)
+    h_league_goal_avg, a_league_goal_avg = curr_data.get_league_goal_averages()
+    
+    return {
+        'home_league_goal_avg': h_league_goal_avg, 
+        'away_league_goal_avg': a_league_goal_avg
+    }
+
+@app.get('/teams/{team_id}/{competition_id}/{season_id}/strengths')
+def get_team_strengths(competition_id: int, season_id: int, team_id: int):
+    curr_data = _create_analytic_data(competition_id, season_id)
+    h_atk, h_def, a_atk, a_def = curr_data.get_team_strengths(team_id)
+
+    return {
+        'home_attack': h_atk, 
+        'home_defense': h_def, 
+        'away_attack': a_atk, 
+        'away_defense': a_def
+    }
+
+def get_match_expected_goals(competition_id: int, season_id: int):
+    with Session(engine) as session:
+        filter = select(Match).where(
+            and_(Match.competition_id == competition_id, Match.season_id == season_id)
+        )
+        matchups = session.exec(filter).all()
+
+
+def _create_analytic_data(competition_id: int, season_id: int) -> Analytics:
+    with Session(engine) as session:
+        return Analytics(session, competition_id, season_id)
+
+def _create_home_and_away_data(home_team_id: int, away_team_id: int) -> HomeAwayID:
+    return HomeAwayID(home_team_id, away_team_id)
+
+# @app.get('/teams/{team_id}/league/average_goals')
+# def get_league_average_goals(team_id):
+#     with Session(engine) as session:
+#         team = _get_team_or_404(session, team_id)
+#         # league = team.league
+#         h_lga, a_lga = get_league_goal_averages(session)
+#         return {'home_league_goal_avg': h_lga, 'away_league_goal_avg': a_lga}
+
+# @app.get('/teams/{analytics}/competition/average_goals')
+# def get_league_average_goals():
+#     with Session(engine) as session:
+#         analytic = Analytics(session, )
 
 @app.get('/teams/{team_id}')
 def get_team(team_id: int):
@@ -56,13 +103,11 @@ def get_team(team_id: int):
 
 @app.get('/teams/{team_id}/goals')
 def get_scores(team_id: int):
-    with Session(engine) as session:
-        team = _get_team_or_404(session, team_id)
-        
-        statement = select(Match).where(
+    with Session(engine) as session:        
+        filter = select(Match).where(
             or_(Match.home_team_id == team_id, Match.away_team_id == team_id)
         )
-        all_matches = session.exec(statement).all()
+        all_matches = session.exec(filter).all()
         
         goals = 0
         for match in all_matches:
@@ -71,8 +116,10 @@ def get_scores(team_id: int):
             else:
                 goals += match.away_goals
         
-        return {'team': team.name, 'total_goals_scored': goals}
-
+        return {
+            'team': _get_team_or_404(session, team_id).name, 
+            'total_goals_scored': goals
+        }
 
 def _get_team_or_404(session: Session, team_id: int) -> Team:
     team = get_team_by_id(session, team_id)
