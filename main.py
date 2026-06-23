@@ -68,8 +68,10 @@ def get_team_strengths(competition_id: int, season_id: int, team_id: int):
         'away_defense': a_def
     }
 
-def get_match_expected_goals(competition_id: int, season_id: int):
+def get_match_expected_goals(competition_id: int, season_id: int, home_id, away_id):
     with Session(engine) as session:
+        curr_teams = HomeAwayID(home_id, away_id)
+        curr_data = _create_analytic_data(competition_id, season_id)
         filter = select(Match).where(
             and_(Match.competition_id == competition_id, Match.season_id == season_id)
         )

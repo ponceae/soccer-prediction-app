@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import math
-from sqlmodel import Session, or_, select
+from sqlmodel import and_, Session, or_, select
 
 from models import Match
 
@@ -23,7 +23,7 @@ class Analytics:
         given competition.
         """
         filter = select(Match).where(
-            or_(
+            and_(
                 Match.competition_id == self.competition_id, 
                 Match.season_id == self.season_id,
             )
@@ -44,13 +44,25 @@ class Analytics:
 
     def get_team_strengths(self, team_id: int) -> tuple[float, float, float, float]:
         """ 
-        Find and return the attacking and defensive strengths for the given team at
-        both home and away.
+        Find and return the attacking and defensive strengths for the given home and 
+        away teams.
         """
         league_h_goal_avg, league_a_goal_avg = self.get_league_goal_averages()
 
-        h_match_filter = select(Match).where(Match.home_team_id == team_id)
-        a_match_filter = select(Match).where(Match.away_team_id == team_id)
+        h_match_filter = select(Match).where(
+            and_(
+                Match.competition_id == self.competition_id,
+                Match.season_id == self.season_id,
+                Match.home_team_id == team_id
+            )
+        )
+        a_match_filter = select(Match).where(
+            and_(
+                Match.competition_id == self.competition_id,
+                Match.season_id == self.season_id,
+                Match.away_team_id == team_id
+            )
+        )
         
         h_matches = self.session.exec(h_match_filter).all()
         a_matches = self.session.exec(a_match_filter).all()
