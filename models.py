@@ -1,14 +1,12 @@
 from datetime import date
 from typing import Optional
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
 
 class Team(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(index=True, unique=True)
-    
-class Match(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    
+
+class MatchBase(SQLModel):
     date: date
     
     competition_id: int = Field(foreign_key='competition.id')
@@ -19,7 +17,23 @@ class Match(SQLModel, table=True):
     
     home_goals: int
     away_goals: int
+
+class Match(MatchBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
     
+    home_team: Optional[Team] = Relationship(
+        sa_relationship_kwargs={'foreign_keys': 'Match.home_team_id'}
+    )
+    away_team: Optional[Team] = Relationship(
+        sa_relationship_kwargs={'foreign_keys': 'Match.away_team_id'}
+    )
+
+class MatchWithTeams(MatchBase):
+    id: int
+    
+    home_team: Optional[Team] = None
+    away_team: Optional[Team] = None
+ 
 class TeamCompetition(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     

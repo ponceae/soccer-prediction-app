@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
-from sqlmodel import SQLModel, create_engine, Session, select, or_
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from sqlmodel import col, SQLModel, create_engine, Session, select, or_
 
 from analytics import Analytics, HomeAwayID
 from crud import get_team_by_id
-from models import Competition, Match, Season, Team, TeamCompetition
+from models import Competition, Match, MatchWithTeams, Season, Team, TeamCompetition
 
 sqlite_file_name = 'soccer.db'
 sqlite_url = f'sqlite:///{sqlite_file_name}'
@@ -17,11 +18,15 @@ async def setup_db(app: FastAPI):
 
 app = FastAPI(title='Poisson Soccer Prediction Model', lifespan=setup_db)
 
+def get_session():
+    with Session(engine) as session:
+        yield session
+
 # +============================+
 #         General Routes
 # +============================+
 
-@app.get('/')
+@app.get('/ping')
 def home():
     return {'message': 'Soccer Predictor API'}
 
@@ -35,11 +40,11 @@ def get_teams():
     with Session(engine) as session:
         return session.exec(select(Team)).all()
     
-@app.get('/matches')
-def get_matches():
-    with Session(engine) as session:
-        return session.exec(select(Match)).all()
-
+@app.get('/matches', response_model=list[MatchWithTeams])
+def get_matches(session: Session = Depends(get_session)):
+    matches = session.exec(select(Match).order_by(col(Match.date))).all()
+    return matches
+    
 @app.get('/competitions')
 def get_competitions():
     with Session(engine) as session:
@@ -208,7 +213,9 @@ def get_team_league_table_stats(competition_id: int, season_id: int, team_id: in
         'goal_difference': gd,
         'points': points,
     }
-   
+
+app.mount('/', StaticFiles(directory='static', html=True), name='static')
+
 # +============================+
 #       Helper Functions
 # +============================+
