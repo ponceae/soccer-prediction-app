@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from sqlmodel import col, SQLModel, create_engine, Session, select, or_
+from sqlmodel import and_, col, SQLModel, create_engine, Session, select, or_
 
 from analytics import Analytics, HomeAwayID
 from crud import get_team_by_id
@@ -38,12 +38,11 @@ def get_team(team_id: int):
 @app.get('/teams')
 def get_teams():
     with Session(engine) as session:
-        return session.exec(select(Team)).all()
+        return session.exec(select(Team).order_by(col(Team.name))).all()
     
 @app.get('/matches', response_model=list[MatchWithTeams])
 def get_matches(session: Session = Depends(get_session)):
-    matches = session.exec(select(Match).order_by(col(Match.date))).all()
-    return matches
+    return session.exec(select(Match).order_by(col(Match.date))).all()
     
 @app.get('/competitions')
 def get_competitions():
@@ -56,7 +55,7 @@ def get_seasons():
         return session.exec(select(Season)).all()
 
 @app.get('/team_competitions')
-def get_team_competitions():
+def get_all_team_competitions():
     with Session(engine) as session:
         return session.exec(select(TeamCompetition)).all()
 
@@ -174,6 +173,25 @@ def get_team_goals(team_id: int):
             'team': _get_team_or_404(session, team_id).name, 
             'total_goals_scored': goals,
         }
+
+@app.get('/teams/{team_id}/competitions')
+def get_team_competitions(team_id: int, session: Session = Depends(get_session)):
+    results = session.exec(select(TeamCompetition, Competition).where(and_(
+        TeamCompetition.team_id == team_id,
+        TeamCompetition.competition_id == Competition.id,
+    ))).all()
+    
+    data = []
+    
+    for team_comp, comp in results:
+        data.append({
+            'competition_id': team_comp.competition_id,
+            'season_id': team_comp.season_id,
+            'name': comp.name,
+            'is_primary': team_comp.is_primary
+        })
+    
+    return data
 
 @app.get('/teams/{team_id}/{competition_id}/{season_id}/outcome_rates')
 def get_outcome_rates(competition_id: int, season_id: int, team_id: int):

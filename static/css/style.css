@@ -4,7 +4,7 @@ body {
   align-items: center;
 }
 
-#team-list, #match-list {
+#team-list {
   padding: 0;
   margin: 0;
 }
@@ -14,17 +14,14 @@ li {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-}
-
-#match-list li {
-  list-style: none;
-}
-
-li h4, li p {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
   padding: 5px;
-  margin:0
+}
+
+#show-teams-btn, #collapse-btn {
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+#collapse-btn {
+  margin-top: 15px;
 }
