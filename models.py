@@ -2,12 +2,37 @@ from datetime import date
 from typing import Optional
 from sqlmodel import SQLModel, Field, Relationship
 
-class Team(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+class TeamBase(SQLModel):
     name: str = Field(index=True, unique=True)
+    
+class Team(TeamBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+class TeamRead(TeamBase):
+    id: int
+
+class SeasonBase(SQLModel):
+    year: str
+    
+class Season(SeasonBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+class SeasonRead(SeasonBase):
+    id: int
+
+class CompetitionBase(SQLModel):
+    name: str = Field(index=True, unique=True)
+    type: str = Field(index=True)
+    
+class Competition(CompetitionBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+class CompetitionRead(CompetitionBase):
+    id: int
 
 class MatchBase(SQLModel):
     date: date
+    matchweek: int
     
     competition_id: int = Field(foreign_key='competition.id')
     season_id: int = Field(foreign_key='season.id')
@@ -34,21 +59,23 @@ class MatchWithTeams(MatchBase):
     home_team: Optional[Team] = None
     away_team: Optional[Team] = None
  
-class TeamCompetition(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    
+class TeamCompetitionBase(SQLModel):
     team_id: int = Field(foreign_key='team.id')
     competition_id: int = Field(foreign_key='competition.id')
     season_id: int = Field(foreign_key='season.id')
+    is_primary: bool = True
     
-    is_primary: bool = False
-    
-class Competition(SQLModel, table=True):
+class TeamCompetition(TeamCompetitionBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: str = Field(index=True, unique=True)
-    type: str = Field(index=True) # Ex. `domestic`, `cup` etc.
+ 
+    team: Optional[Team] = Relationship()
+    competition: Optional[Competition] = Relationship()
+    season: Optional[Season] = Relationship()
     
-class Season(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    year: str # Ex. `2024-25`
+class TeamCompetitionExtended(TeamCompetitionBase):
+    id: int
+    
+    team: Optional[TeamRead]
+    competition: Optional[CompetitionRead]
+    season: Optional[SeasonRead]
     

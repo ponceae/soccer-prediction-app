@@ -1,15 +1,12 @@
 from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from sqlmodel import and_, col, SQLModel, create_engine, Session, select, or_
+from sqlmodel import col, SQLModel, Session, select, or_
 
 from analytics import Analytics, HomeAwayID
 from crud import get_team_by_id
-from models import Competition, Match, MatchWithTeams, Season, Team, TeamCompetition
-
-sqlite_file_name = 'soccer.db'
-sqlite_url = f'sqlite:///{sqlite_file_name}'
-engine = create_engine(sqlite_url, echo=False)
+from database import engine, get_session
+import models as db
 
 @asynccontextmanager
 async def setup_db(app: FastAPI):
@@ -17,10 +14,6 @@ async def setup_db(app: FastAPI):
     yield
 
 app = FastAPI(title='Poisson Soccer Prediction Model', lifespan=setup_db)
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 # +============================+
 #         General Routes
@@ -30,34 +23,29 @@ def get_session():
 def home():
     return {'message': 'Soccer Predictor API'}
 
-@app.get('/teams/{team_id}')
-def get_team(team_id: int):
-    with Session(engine) as session:
-        return _get_team_or_404(session, team_id)
+@app.get('/teams/{team_id}', response_model=db.TeamRead)
+def get_team(team_id: int, session: Session = Depends(get_session)):
+    return _get_team_or_404(session, team_id)
 
-@app.get('/teams')
-def get_teams():
-    with Session(engine) as session:
-        return session.exec(select(Team).order_by(col(Team.name))).all()
+@app.get('/teams', response_model=list[db.TeamRead])
+def get_teams(session: Session = Depends(get_session)):
+    return session.exec(select(db.Team).order_by(col(db.Team.name))).all()
     
-@app.get('/matches', response_model=list[MatchWithTeams])
+@app.get('/matches', response_model=list[db.MatchWithTeams])
 def get_matches(session: Session = Depends(get_session)):
-    return session.exec(select(Match).order_by(col(Match.date))).all()
+    return session.exec(select(db.Match).order_by(col(db.Match.date))).all()
     
-@app.get('/competitions')
-def get_competitions():
-    with Session(engine) as session:
-        return session.exec(select(Competition)).all()        
+@app.get('/competitions', response_model=list[db.CompetitionRead])
+def get_competitions(session: Session = Depends(get_session)):
+    return session.exec(select(db.Competition)).all()        
 
-@app.get('/seasons')
-def get_seasons():
-    with Session(engine) as session:
-        return session.exec(select(Season)).all()
+@app.get('/seasons', response_model=list[db.SeasonRead])
+def get_seasons(session: Session = Depends(get_session)):
+    return session.exec(select(db.Season)).all()
 
-@app.get('/team_competitions')
-def get_all_team_competitions():
-    with Session(engine) as session:
-        return session.exec(select(TeamCompetition)).all()
+@app.get('/team_competitions', response_model=db.TeamCompetitionExtended)
+def get_all_team_competitions(session: Session = Depends(get_session)):
+    return session.exec(select(db.TeamCompetition)).all()
 
 # +============================+
 #     League Specific Routes
@@ -157,8 +145,8 @@ def get_team_strengths(competition_id: int, season_id: int, team_id: int):
 @app.get('/teams/{team_id}/goals')
 def get_team_goals(team_id: int):
     with Session(engine) as session:        
-        filter = select(Match).where(
-            or_(Match.home_team_id == team_id, Match.away_team_id == team_id)
+        filter = select(db.Match).where(
+            or_(db.Match.home_team_id == team_id, db.Match.away_team_id == team_id)
         )
         all_matches = session.exec(filter).all()
         
@@ -174,24 +162,14 @@ def get_team_goals(team_id: int):
             'total_goals_scored': goals,
         }
 
-@app.get('/teams/{team_id}/competitions')
+@app.get(
+    '/teams/{team_id}/competitions', 
+    response_model=list[db.TeamCompetitionExtended]
+)
 def get_team_competitions(team_id: int, session: Session = Depends(get_session)):
-    results = session.exec(select(TeamCompetition, Competition).where(and_(
-        TeamCompetition.team_id == team_id,
-        TeamCompetition.competition_id == Competition.id,
-    ))).all()
-    
-    data = []
-    
-    for team_comp, comp in results:
-        data.append({
-            'competition_id': team_comp.competition_id,
-            'season_id': team_comp.season_id,
-            'name': comp.name,
-            'is_primary': team_comp.is_primary
-        })
-    
-    return data
+    return session.exec(
+        select(db.TeamCompetition).where(db.TeamCompetition.team_id == team_id)
+    ).all()
 
 @app.get('/teams/{team_id}/{competition_id}/{season_id}/outcome_rates')
 def get_outcome_rates(competition_id: int, season_id: int, team_id: int):
@@ -245,7 +223,7 @@ def _create_analytic_data(competition_id: int, season_id: int) -> Analytics:
 def _create_home_and_away_data(home_team_id: int, away_team_id: int) -> HomeAwayID:
     return HomeAwayID(home_team_id, away_team_id)
 
-def _get_team_or_404(session: Session, team_id: int) -> Team:
+def _get_team_or_404(session: Session, team_id: int) -> db.Team:
     team = get_team_by_id(session, team_id)
     
     if not team:
