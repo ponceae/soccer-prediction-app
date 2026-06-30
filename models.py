@@ -23,6 +23,7 @@ class SeasonRead(SeasonBase):
 class CompetitionBase(SQLModel):
     name: str = Field(index=True, unique=True)
     type: str = Field(index=True)
+    country: str = Field(index=True)
     
 class Competition(CompetitionBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

@@ -8,13 +8,22 @@
     <link rel="stylesheet" href="css/style.css">
   </head>
   <body>
-    <h2>Soccer Prediction Model</h2>
 
-    <button id="show-teams-btn">Teams</button>
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>Leagues</h2>
+      </div>
 
-    <ul id="team-list" style="display: none;"></ul>
+      <ul class="country-list" id="countryList"></ul>
+    </nav>
 
-    <button id="collapse-btn" style="display: none;">Collapse All</button>
+    <button class="menu-btn" id="toggleMenuBtn">&#9776;</button>
+
+    <main class="landing-page">
+      <h1 id="mainHeader">Soccer Prediction Model</h1>
+    
+      <div id="tableContainer"></div>
+    </main>
 
     <script src="/js/main.js"></script>
   </body>

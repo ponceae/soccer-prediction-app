@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from collections import defaultdict
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import col, SQLModel, Session, select, or_
@@ -46,7 +47,7 @@ def get_seasons(session: Session = Depends(get_session)):
 @app.get('/team_competitions', response_model=db.TeamCompetitionExtended)
 def get_all_team_competitions(session: Session = Depends(get_session)):
     return session.exec(select(db.TeamCompetition)).all()
-
+    
 # +============================+
 #     League Specific Routes
 # +============================+
@@ -78,6 +79,37 @@ def get_over_rate(competition_id: int, season_id: int):
     return {
         'over_2.5_goals': over_rate,
     }
+
+@app.get('/league_menu', response_model=dict[str, list[str]])
+def get_league_countries(session: Session = Depends(get_session)):
+    competitions = session.exec(select(db.Competition)).all()
+    
+    comp_and_country= defaultdict(list)
+    
+    for comp in competitions:
+        comp_and_country[comp.country].append(comp.name)
+    
+    return comp_and_country
+
+@app.get('/leagues{competition_id}/{season_id}/league_table')
+def get_full_league_table(competition_id: int, season_id: int, session: Session = Depends(get_session)):
+    league_teams = session.exec(
+        select(db.Team)
+        .join(db.TeamCompetition)
+        .where(db.TeamCompetition.competition_id == competition_id)
+    ).all()
+    
+    table = []
+    
+    analytics = _create_analytic_data(competition_id, season_id)
+    
+    for team in league_teams:
+        assert team.id is not None
+        wins, losses, draws, total_matches, gf, ga, gd, points = analytics.league_table_stats(team.id)
+        table.append({
+            'team_name': team.name,
+            'matches_played': total
+        })
 
 # +============================+
 #     Matchup Specific Routes

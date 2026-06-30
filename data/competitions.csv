@@ -1,4 +1,4 @@
-id,name,type
-1,English Premier League,Domestic League
-2,FA Cup,Domestic Cup
-3,Carabao Cup,League Cup
+id,name,type,country
+1,English Premier League,Domestic League,England
+2,FA Cup,Domestic Cup,England
+3,Carabao Cup,League Cup,England
