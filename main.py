@@ -80,18 +80,31 @@ def get_over_rate(competition_id: int, season_id: int):
         'over_2.5_goals': over_rate,
     }
 
-@app.get('/league_menu', response_model=dict[str, list[str]])
-def get_league_countries(session: Session = Depends(get_session)):
+@app.get('/menu_data')
+def get_menu_data(session: Session = Depends(get_session)):
     competitions = session.exec(select(db.Competition)).all()
     
-    comp_and_country= defaultdict(list)
+    menu = defaultdict(list)
     
     for comp in competitions:
-        comp_and_country[comp.country].append(comp.name)
+        curr_season_id = session.exec(
+            select(db.TeamCompetition.season_id)
+            .join(db.Season)
+            .where(col(db.TeamCompetition.competition_id) == comp.id)
+            .order_by(col(db.Season.year).desc())
+        ).first()
     
-    return comp_and_country
+        season_id = curr_season_id if curr_season_id else 0
+        
+        menu[comp.country].append({
+            'id': comp.id,
+            'name': comp.name,
+            'season_id': season_id
+        })
+    
+    return menu
 
-@app.get('/leagues{competition_id}/{season_id}/league_table')
+@app.get('/leagues/{competition_id}/{season_id}/league_table')
 def get_full_league_table(competition_id: int, season_id: int, session: Session = Depends(get_session)):
     league_teams = session.exec(
         select(db.Team)
@@ -108,8 +121,17 @@ def get_full_league_table(competition_id: int, season_id: int, session: Session 
         wins, losses, draws, total_matches, gf, ga, gd, points = analytics.league_table_stats(team.id)
         table.append({
             'team_name': team.name,
-            'matches_played': total
+            'matches_played': total_matches,
+            'points': points,
+            'wins': wins,
+            'losses': losses,
+            'draws': draws,
+            'gf': gf,
+            'ga': ga,
+            'gd': gd,
         })
+
+    return table
 
 # +============================+
 #     Matchup Specific Routes

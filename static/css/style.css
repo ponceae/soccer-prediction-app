@@ -98,7 +98,7 @@ body {
   max-height: 0;
   overflow: hidden;
   background-color: #22313F;
-  transition: max-height 0.3 ease-in-out;
+  transition: max-height 0.3s ease-in-out;
 }
 
 .league-list.show {
@@ -120,4 +120,59 @@ body {
 
 .landing-page {
   padding: 80px 40px 40px 40px;
+}
+
+#tableContainer {
+  margin-top: 20px;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #DDD;
+}
+
+.data-table th {
+  background-color: #2C3E50;
+  color: white;
+  text-transform: uppercase;
+  font-size: 14px;
+  text-align: center;
+}
+
+.data-table td {
+  text-align: center;
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+  text-align: left;
+}
+
+.data-table tbody tr:hover {
+  background-color: #F1F2F6;
+}
+
+.sidebar-home {
+  padding: 15px 20px;
+  color: white;
+  cursor: pointer;
+  border-bottom: 1px solid #34495E;
+  transition: background 0.2s ease;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.sidebar-home:hover {
+  background-color: #34495E;
 }
