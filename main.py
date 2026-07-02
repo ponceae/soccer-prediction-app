@@ -207,9 +207,9 @@ def get_team_goals(team_id: int):
         goals = 0
         for match in all_matches:
             if match.home_team_id == team_id:
-                goals += match.home_goals
+                goals += match.ft_home_goals
             else:
-                goals += match.away_goals
+                goals += match.ft_away_goals
         
         return {
             'team': _get_team_or_404(session, team_id).name, 

@@ -18,6 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
     tableContainer.innerHTML = '';
   });
 
+  // tableContainer.addEventListener('click', displayTeamInfo() {
+
+  // }
+
+  async function displayTeamInfo() {
+
+  }
+
   async function loadMenuData() {
     try {
       const response = await fetch('http://127.0.0.1:8000/menu_data');

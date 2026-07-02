@@ -41,8 +41,38 @@ class MatchBase(SQLModel):
     home_team_id: int = Field(foreign_key='team.id')
     away_team_id: int = Field(foreign_key='team.id')
     
-    home_goals: int
-    away_goals: int
+    # Full Time Goals
+    ft_home_goals: int
+    ft_away_goals: int
+
+    ft_result: str
+
+    # Half Time Goals
+    ht_home_goals: int
+    ht_away_goals: int
+
+    ht_result: str
+    
+    referee: str
+    
+    home_shots: int
+    away_shots: int
+    
+    # Shots on Target
+    home_sot: int
+    away_sot: int
+    
+    home_fouls: int
+    away_fouls: int
+    
+    home_corners: int
+    away_corners: int
+    
+    home_yellow_cards: int
+    away_yellow_cards: int
+    
+    home_red_cards: int
+    away_red_cards: int
 
 class Match(MatchBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

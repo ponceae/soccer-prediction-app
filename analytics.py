@@ -39,8 +39,8 @@ class Analytics:
         if not total_matches:
             return 0.0, 0.0
         
-        h_goals = sum(m.home_goals for m in competition_matches)
-        a_goals = sum(m.away_goals for m in competition_matches)
+        h_goals = sum(m.ft_home_goals for m in competition_matches)
+        a_goals = sum(m.ft_away_goals for m in competition_matches)
         
         h_goal_avg = h_goals / total_matches
         a_goal_avg = a_goals / total_matches
@@ -90,11 +90,11 @@ class Analytics:
         if not total_h_matches and not total_a_matches:
             return 0.0, 0.0, 0.0, 0.0
 
-        h_goals = sum(m.home_goals for m in h_matches)
-        a_goals = sum(m.away_goals for m in a_matches)
+        h_goals = sum(m.ft_home_goals for m in h_matches)
+        a_goals = sum(m.ft_away_goals for m in a_matches)
         
-        h_goals_conceeded = sum(m.away_goals for m in h_matches)
-        a_goals_conceeded = sum(m.home_goals for m in a_matches)
+        h_goals_conceeded = sum(m.ft_away_goals for m in h_matches)
+        a_goals_conceeded = sum(m.ft_home_goals for m in a_matches)
         
         avg_h_goals = h_goals / total_h_matches
         avg_a_goals = a_goals / total_a_matches
@@ -261,7 +261,7 @@ class Analytics:
         bts = 0
         
         for match in matches:
-            if match.home_goals > 0 and match.away_goals > 0:
+            if match.ft_home_goals > 0 and match.ft_away_goals > 0:
                 bts += 1
                 
         return bts / total_matches
@@ -289,7 +289,7 @@ class Analytics:
         over_count = 0
         
         for match in matches:
-            if match.home_goals + match.away_goals >= 3:
+            if match.ft_home_goals + match.ft_away_goals >= 3:
                 over_count += 1
         
         return over_count / total_matches
@@ -335,11 +335,11 @@ class Analytics:
         gf, ga = 0, 0
         for match in team_matches:
             if match.home_team_id == team_id:
-                gf += match.home_goals
-                ga += match.away_goals
+                gf += match.ft_home_goals
+                ga += match.ft_away_goals
             elif match.away_team_id == team_id:
-                gf += match.away_goals
-                ga += match.home_goals
+                gf += match.ft_away_goals
+                ga += match.ft_home_goals
         
         gd = gf - ga
         points = (wins * 3) + draws
@@ -416,16 +416,16 @@ class Analytics:
         
         for match in team_matches:
             if match.home_team_id == team_id:
-                if match.home_goals > match.away_goals:
+                if match.ft_home_goals > match.ft_away_goals:
                     wins += 1
-                elif match.home_goals < match.away_goals:
+                elif match.ft_home_goals < match.ft_away_goals:
                     losses += 1
                 else:
                     draws += 1
             elif match.away_team_id == team_id:
-                if match.away_goals > match.home_goals:
+                if match.ft_away_goals > match.ft_home_goals:
                     wins += 1
-                elif match.away_goals < match.home_goals:
+                elif match.ft_away_goals < match.ft_home_goals:
                     losses += 1
                 else:
                     draws += 1
