@@ -24,10 +24,10 @@ class Competition(CompetitionBase, table=True):
 class Match(MatchBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     
-    competition_id: int = Field(foreign_key='competition_id', index=True)
-    season_id: int = Field(foreign_key='season_id', index=True)
-    home_team_id: int = Field(foreign_key='team_id', index=True)
-    away_team_id: int = Field(foreign_key='team_id', index=True)
+    competition_id: int = Field(foreign_key='competition.id', index=True)
+    season_id: int = Field(foreign_key='season.id', index=True)
+    home_team_id: int = Field(foreign_key='team.id', index=True)
+    away_team_id: int = Field(foreign_key='team.id', index=True)
     
     home_team: Optional[Team] = Relationship(
         sa_relationship_kwargs={'foreign_keys': 'Match.home_team_id'}
@@ -47,9 +47,9 @@ class TeamCompetition(TeamCompetitionBase, table=True):
     )
     id: Optional[int] = Field(default=None, primary_key=True)
  
-    team_id: int = Field(foreign_key='team_id')
-    competition_id: int = Field(foreign_key='competition_id')
-    season_id: int = Field(foreign_key='season_id')
+    team_id: int = Field(foreign_key='team.id')
+    competition_id: int = Field(foreign_key='competition.id')
+    season_id: int = Field(foreign_key='season.id')
  
     team: Optional[Team] = Relationship()
     competition: Optional[Competition] = Relationship()
