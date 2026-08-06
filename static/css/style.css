@@ -105,6 +105,32 @@ body {
   max-height: 500px;
 }
 
+.data-table td {
+  border: none !important;
+  border-bottom: 1px solid #DDD !important; 
+}
+
+.data-table tbody tr.ucl td {
+  background-color: transparent !important; 
+}
+.data-table tbody tr.ucl td:first-child {
+  border-left: 5px solid #2ECC71 !important; 
+}
+
+.data-table tbody tr.uel td {
+  background-color: transparent !important; 
+}
+.data-table tbody tr.uel td:first-child {
+  border-left: 5px solid #3498DB !important; 
+}
+
+.data-table tbody tr.relegation td {
+  background-color: transparent !important; 
+}
+.data-table tbody tr.relegation td:first-child {
+  border-left: 5px solid #E74C3C !important; 
+}
+
 .league-item-text{
   display: block;
   padding: 12px 20px 12px 40px;

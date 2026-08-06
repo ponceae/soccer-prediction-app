@@ -18,12 +18,26 @@ document.addEventListener('DOMContentLoaded', () => {
     tableContainer.innerHTML = '';
   });
 
-  // tableContainer.addEventListener('click', displayTeamInfo() {
+  tableContainer.addEventListener('click', (event) => {
+    const clickedRow = event.target.closest('tr');
+    if (clickedRow) {
+      const teamId = clickedRow.dataset.teamId;
+      displayTeamInfo(teamId);
+    }
+  });
 
-  // }
+  async function displayTeamInfo(teamId) {
+    try {
+      const response = await fetch();
+      const data = await response.json();
 
-  async function displayTeamInfo() {
-
+      renderTeamInfo(data);
+    } catch (error) {
+      console.error('Failed to load team data', error);
+      tableContainer.innerHTML = `
+        <li style="padding: 20px; color: #E74C3C;">Unable to load team data.</li>
+      `;
+    }
   }
 
   async function loadMenuData() {
@@ -97,7 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <table class="data-table">
           <thead>
             <tr>
-              <th>Team</th>
+              <th>#</th>
+              <th></th>
               <th>Pl</th>
               <th>W</th>
               <th>D</th>
@@ -108,12 +123,27 @@ document.addEventListener('DOMContentLoaded', () => {
               <th>Pts</th>
             </tr>
           </thead>
-        <tbody>
+          <tbody>
       `;
 
-      data.forEach(team => {
+      data.forEach((team, index) => {
+        let rowClass = '';
+
+        if (index >= 0 && index <= 3) {
+          rowClass = 'ucl';
+        }
+
+        else if (index == 4) {
+          rowClass = 'uel';
+        }
+
+        else if (index >= data.length - 3) {
+          rowClass = 'relegation';
+        }
+
         tableHTML += `
-          <tr>
+          <tr class="${rowClass}" data-team-id="${team.team_id}">
+            <td>${index + 1}</td>
             <td><strong>${team.team_name}</strong></td>
             <td>${team.matches_played}</td>
             <td>${team.wins}</td>

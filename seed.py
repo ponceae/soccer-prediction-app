@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlmodel import Session, SQLModel, select
 
 from database import engine
-import models as db
+import models as models
     
 EPL_LU = {
     'Tottenham': 'Tottenham Hotspur',
@@ -33,7 +33,7 @@ def load_csv_to_table(session: Session, csv_path: str, model):
     session.commit()
 
 def generate_tids(session: Session) -> dict[str, int]:
-    teams = session.exec(select(db.Team)).all()
+    teams = session.exec(select(models.Team)).all()
     
     tids = {}
     for team in teams:
@@ -56,7 +56,7 @@ def load_match_csv_to_table(session: Session, csv_path: str, model, cid: int, si
             tally['HomeTeam'] = tally.get(home_team, 0) + 1
             tally['AwayTeam'] = tally.get(away_team, 0) + 1
                             
-            match = db.Match(
+            match = models.Match(
                 date=datetime.strptime(row['Date'], '%Y-%m-%d').date(),
                 matchweek=_matchweek,
                 competition_id=cid,
@@ -84,8 +84,7 @@ def load_match_csv_to_table(session: Session, csv_path: str, model, cid: int, si
                 away_red_cards=int(row['AR']),
             )
             session.add(match)
-    session.commit()
-            
+    session.commit()          
 
 def seed_database():
     print('Creating database tables...')
@@ -93,13 +92,13 @@ def seed_database():
     
     with Session(engine) as session:
         print('Importing independent tables...')
-        load_csv_to_table(session, 'data/teams.csv', db.Team)
-        load_csv_to_table(session, 'data/competitions.csv', db.Competition)
-        load_csv_to_table(session, 'data/seasons.csv', db.Season)
+        load_csv_to_table(session, 'data/teams.csv', models.Team)
+        load_csv_to_table(session, 'data/competitions.csv', models.Competition)
+        load_csv_to_table(session, 'data/seasons.csv', models.Season)
         
         print('Importing relational tables...')     
-        load_csv_to_table(session, 'data/team_competitions.csv', db.TeamCompetition)
-        load_match_csv_to_table(session, 'data/epl_2526_season_matches.csv', db.Match, 1, 1)
+        load_csv_to_table(session, 'data/team_competitions.csv', models.TeamCompetition)
+        load_match_csv_to_table(session, 'data/epl_2526_season_matches.csv', models.Match, 1, 1)
         
         print('Database successfully seeded from CSVs.')
         

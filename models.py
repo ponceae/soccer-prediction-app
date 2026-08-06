@@ -1,81 +1,33 @@
-from datetime import date
 from typing import Optional
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, UniqueConstraint
+from schemas import (
+    TeamBase,
+    SeasonBase,
+    CompetitionBase,
+    MatchBase,
+    TeamCompetitionBase,
+)
 
-class TeamBase(SQLModel):
-    name: str = Field(index=True, unique=True)
-    
 class Team(TeamBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    
-class TeamRead(TeamBase):
-    id: int
-
-class SeasonBase(SQLModel):
-    year: str
+    name: str = Field(index=True, unique=True)
     
 class Season(SeasonBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     
-class SeasonRead(SeasonBase):
-    id: int
-
-class CompetitionBase(SQLModel):
+class Competition(CompetitionBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(index=True, unique=True)
     type: str = Field(index=True)
     country: str = Field(index=True)
-    
-class Competition(CompetitionBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    
-class CompetitionRead(CompetitionBase):
-    id: int
-
-class MatchBase(SQLModel):
-    date: date
-    matchweek: int
-    
-    competition_id: int = Field(foreign_key='competition.id')
-    season_id: int = Field(foreign_key='season.id')
-    
-    home_team_id: int = Field(foreign_key='team.id')
-    away_team_id: int = Field(foreign_key='team.id')
-    
-    # Full Time Goals
-    ft_home_goals: int
-    ft_away_goals: int
-
-    ft_result: str
-
-    # Half Time Goals
-    ht_home_goals: int
-    ht_away_goals: int
-
-    ht_result: str
-    
-    referee: str
-    
-    home_shots: int
-    away_shots: int
-    
-    # Shots on Target
-    home_sot: int
-    away_sot: int
-    
-    home_fouls: int
-    away_fouls: int
-    
-    home_corners: int
-    away_corners: int
-    
-    home_yellow_cards: int
-    away_yellow_cards: int
-    
-    home_red_cards: int
-    away_red_cards: int
 
 class Match(MatchBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    
+    competition_id: int = Field(foreign_key='competition_id', index=True)
+    season_id: int = Field(foreign_key='season_id', index=True)
+    home_team_id: int = Field(foreign_key='team_id', index=True)
+    away_team_id: int = Field(foreign_key='team_id', index=True)
     
     home_team: Optional[Team] = Relationship(
         sa_relationship_kwargs={'foreign_keys': 'Match.home_team_id'}
@@ -83,30 +35,22 @@ class Match(MatchBase, table=True):
     away_team: Optional[Team] = Relationship(
         sa_relationship_kwargs={'foreign_keys': 'Match.away_team_id'}
     )
-
-class MatchWithTeams(MatchBase):
-    id: int
-    
-    home_team: Optional[Team] = None
-    away_team: Optional[Team] = None
- 
-class TeamCompetitionBase(SQLModel):
-    team_id: int = Field(foreign_key='team.id')
-    competition_id: int = Field(foreign_key='competition.id')
-    season_id: int = Field(foreign_key='season.id')
-    is_primary: bool = True
     
 class TeamCompetition(TeamCompetitionBase, table=True):
+    __table_args__ = (
+        UniqueConstraint(
+            'team_id', 
+            'competition_id', 
+            'season_id', 
+            name='unique_team_comp_season',
+        ),
+    )
     id: Optional[int] = Field(default=None, primary_key=True)
+ 
+    team_id: int = Field(foreign_key='team_id')
+    competition_id: int = Field(foreign_key='competition_id')
+    season_id: int = Field(foreign_key='season_id')
  
     team: Optional[Team] = Relationship()
     competition: Optional[Competition] = Relationship()
     season: Optional[Season] = Relationship()
-    
-class TeamCompetitionExtended(TeamCompetitionBase):
-    id: int
-    
-    team: Optional[TeamRead]
-    competition: Optional[CompetitionRead]
-    season: Optional[SeasonRead]
-    
