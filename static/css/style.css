@@ -110,6 +110,10 @@ body {
   border-bottom: 1px solid #DDD !important; 
 }
 
+.data-table td:nth-child(2) {
+  text-align: left;
+}
+
 .data-table tbody tr.ucl td {
   background-color: transparent !important; 
 }
