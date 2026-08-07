@@ -105,13 +105,103 @@ body {
   max-height: 500px;
 }
 
+.league-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #E2E8F0;
+  margin-bottom: 20px;
+}
+
+.league-title-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.competition-badge {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+}
+
+.league-text h2 {
+  font-size: 1.6rem;
+  color: #2C3E50;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.country-subtitle {
+  font-size: 0.95rem;
+  color: #7F8C8D;
+  margin-top: 2px;
+}
+
+.season-select-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+  color: #34495E;
+}
+
+.season-dropdown {
+  padding: 8px 12px;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  background-color: white;
+  font-size: 0.95rem;
+  color: #2C3E50;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.season-dropdown {
+  border-color: #3498D8;
+}
+
+.season-select-group label {
+  font-size: 0.85rem;
+  color: #7F8C8D;
+}
+
+.season-dropdown {
+  font-weight: 0.85rem;
+  padding: 6px 10px;
+}
+
 .data-table td {
   border: none !important;
   border-bottom: 1px solid #DDD !important; 
 }
 
+.data-table tbody tr {
+  cursor: pointer
+}
+
+.data-table tbody tr:hover td:nth-child(2) {
+  text-decoration: underline;
+}
+
 .data-table td:nth-child(2) {
   text-align: left;
+}
+
+.data-table td.team-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.data-table .team-badge {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
 .data-table tbody tr.ucl td {

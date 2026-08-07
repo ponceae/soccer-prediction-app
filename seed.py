@@ -16,6 +16,7 @@ EPL_LU = {
     'West Ham': 'West Ham United',
     'Newcastle': 'Newcastle United',
     'Wolves': 'Wolverhampton Wanderers',
+    'Bournemouth': 'AFC Bournemouth'
 }
     
 def load_csv_to_table(session: Session, csv_path: str, model):

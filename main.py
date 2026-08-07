@@ -72,39 +72,35 @@ def get_over_rate(analytics: Analytics = Depends(get_analytics)):
 def get_menu_data(session: Session = Depends(get_session)):
     statement = (
         select(
-            models.Competition,
-            models.TeamCompetition.season_id, 
+            models.Competition, 
+            models.Season,
         )
-        .outerjoin(
+        .join(
             models.TeamCompetition, 
             col(models.Competition.id) == col(models.TeamCompetition.competition_id),
         )
-        .outerjoin(models.Season, col(models.TeamCompetition.season_id) == col(models.Season.id))
-        .group_by(
-            col(models.Competition.id),
-            col(models.TeamCompetition.season_id),
-            col(models.Season.year),
+        .join(
+            models.Season, 
+            col(models.TeamCompetition.season_id) == col(models.Season.id),
         )
+        .group_by(col(models.Competition.id), col(models.Season.id))
         .order_by(
-            col(models.Competition.country),
-            col(models.Competition.name),
+            col(models.Competition.country), 
+            col(models.Competition.name), 
             col(models.Season.year).desc(),
         )
     )
     
     results = session.exec(statement).all()
     
-    menu = defaultdict(list)
-    seen_competitions =  set()
+    menu = defaultdict(lambda: defaultdict(list))
     
-    for comp, season_id in results:
-        if comp.id not in seen_competitions:
-            seen_competitions.add(comp.id)
-            menu[comp.country].append({
-                'id':  comp.id,
-                'name': comp.name,
-                'season_id': season_id if season_id is not None else 0
-            })
+    for comp, season in results:
+        menu[comp.country][comp.name].append({
+            'competition_id': comp.id,
+            'season_id': season.id,
+            'season_year': season.year,
+        })
     
     return menu 
 
@@ -138,6 +134,7 @@ def get_full_league_table(
         ) = analytics.league_table_stats(team.id)
         
         table.append({
+            'team_id': team.id,
             'team_name': team.name,
             'matches_played': total_matches,
             'points': points,
