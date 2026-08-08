@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlmodel import SQLModel, Field, Relationship, UniqueConstraint
+from sqlmodel import Field, Relationship, UniqueConstraint
 from schemas import (
     TeamBase,
     SeasonBase,

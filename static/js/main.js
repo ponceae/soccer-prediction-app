@@ -61,6 +61,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  countryListContainer.addEventListener('click', (event) => {
+    const clickedHeader = event.target.closest('.country-header');
+    if (clickedHeader) {
+      const leagueList = countryHeader.nextElementSibling;
+      leagueList.classList.toggle('show');
+      countryHeader.classList.toggle('active');
+      return;
+    }
+
+    const clickedItem = event.target.closest('.league-item');
+    if (clickedItem) {
+      sidebar.classList.remove('open');
+
+      const { country, leagueName, compId, seasonId } = clickedItem.dataset;
+      const seasons = globalMenuData[country][leagueName];
+      
+      currLeagueName = leagueName;
+      currCountry = country;
+
+      renderSeasonSelect(seasons, compId, leagueName, country);
+      renderLeagueTable(compId, seasonId);
+    }
+  });
+
   async function displayTeamInfo(teamId, pushToHistory = true) {
     try {
       const response = await fetch(`/teams/${teamId}`);
@@ -85,14 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.error('Failed to load team data', error);
       tableContainer.innerHTML = `
-        <li style="padding: 20px; color: #E74C3C;">Unable to load team data.</li>
+        <p style="padding: 20px; color: #E74C3C;">Unable to load team data.</p>
       `;
     }
   }
 
   async function loadMenuData() {
     try {
-      const response = await fetch('http://127.0.0.1:8000/menu_data');
+      const response = await fetch('/menu_data');
       const data = await response.json();
 
       globalMenuData = data;
@@ -114,56 +138,39 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderMenu(menuData) {
-    countryListContainer.innerHTML = '';
+    let menuHTML = '';
 
     for (const [country, competitions] of Object.entries(menuData)) {
-      
-      const countryItem = document.createElement('li');
-      countryItem.className = 'country-item';
-
-      const countryHeader = document.createElement('div');
-      countryHeader.className = 'country-header';
-      // TODO: When more countries are added, create a flag filter.
-      countryHeader.innerHTML = `
-        🏴󠁧󠁢󠁥󠁮󠁧󠁿 ${country} <span class="arrow">▼</span>
-      `;
-
-      const leagueList = document.createElement('ul');
-      leagueList.className = 'league-list';
+      let leaguesHTML = '';
 
       for (const [leagueName, seasons] of Object.entries(competitions)) {
-        const leagueItem = document.createElement('li');
+        const latestSeason = seasons[0];
 
-        leagueItem.innerHTML = `
-          <span class="league-item-text">${leagueName}</span>
+        leaguesHTML += `
+          <li
+            class="league-item"
+            data-country="${country}"
+            data-league-name="${leagueName}"
+            data-comp-id="${latestSeason.competition_id}"
+            data-season-id="${latestSeason.season_id}"
+          >
+            <span class="league-item-text">${leagueName}</span>
+          </li>
         `;
-
-        leagueItem.addEventListener('click', () => {
-          sidebar.classList.remove('open');
-
-          const latestSeason = seasons[0]
-
-          currLeagueName = leagueName;
-          currCountry = country;
-
-          renderSeasonSelect(seasons, latestSeason.competition_id, leagueName, country)
-
-          renderLeagueTable(latestSeason.competition_id, latestSeason.season_id)
-        });
-
-        leagueList.appendChild(leagueItem)
       }
 
-      countryHeader.addEventListener('click', () => {
-        leagueList.classList.toggle('show');
-        countryHeader.classList.toggle('active');
-      });
-
-      countryItem.appendChild(countryHeader);
-      countryItem.appendChild(leagueList);
-
-      countryListContainer.appendChild(countryItem);
+      menuHTML += `
+        <li class="country-item">
+          <div class="country-header">
+            🏴󠁧󠁢󠁥󠁮󠁧󠁿 ${country} <span class="arrow">▼</span>
+          </div>
+          <ul class="league-list">
+            ${leaguesHTML}
+          </ul>
+        </li>
+      `;
     }
+    countryListContainer.innerHTML = menuHTML;
   }
 
   function renderSeasonSelect(seasons, currCompId, leagueName, country) {
@@ -201,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selectElem.value = currSeasonId || seasons[0].season_id;
     selectElem.onchange = (e) => {
       const selectedSeasonId = e.target.value;
-      renderLeagueTable(competitionId, selectedSeasonId, true)
+      renderLeagueTable(currCompId, selectedSeasonId, true)
     }
   }
 

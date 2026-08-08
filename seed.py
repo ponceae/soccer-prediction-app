@@ -1,9 +1,9 @@
 import csv
-from datetime import datetime
-from sqlmodel import Session, SQLModel, select
-
 from database import engine
-import models as models
+from datetime import datetime
+from sqlmodel import select, Session, SQLModel
+
+import models
     
 EPL_LU = {
     'Tottenham': 'Tottenham Hotspur',
@@ -19,7 +19,15 @@ EPL_LU = {
     'Bournemouth': 'AFC Bournemouth'
 }
     
-def load_csv_to_table(session: Session, csv_path: str, model):
+def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
+    """
+    Read a csv file and load its contents into the specified database table.
+
+    Args:
+        session (Session): The current working database session.
+        csv_path (str): The filepath to the csv.
+        model (type[SQLModel]): The SQLModel class representing the table.
+    """
     with open(csv_path, mode='r', encoding='utf-8') as file:
         reader = csv.DictReader(file)
         for row in reader:
@@ -34,6 +42,16 @@ def load_csv_to_table(session: Session, csv_path: str, model):
     session.commit()
 
 def generate_tids(session: Session) -> dict[str, int]:
+    """
+    Retrieve all the teams from the database and create a lookup dictionary.
+
+    Args:
+        session (Session): The current working database session.
+
+    Returns:
+        dict[str, int]: A mapping of all the teams to their unique IDs.
+            (e.g., `{'Arsenal': 1, 'Aston Villa': 2, ...}`).
+    """
     teams = session.exec(select(models.Team)).all()
     
     tids = {}
@@ -42,10 +60,23 @@ def generate_tids(session: Session) -> dict[str, int]:
     
     return tids
 
-def load_match_csv_to_table(session: Session, csv_path: str, model, cid: int, sid: int):
+def load_match_csv_to_table(
+    session: Session, 
+    csv_path: str, 
+    comp_id: int, 
+    _season_id: int
+):
+    """
+    Read match data from a csv file and load it into the `Match` database table.
+
+    Args:
+        session (Session): THe current working database session.
+        csv_path (str): The filepath to to the csv.
+        comp_id (int): The competition ID the matches belong to.
+        _season_id (int): The season ID the matches belong to.
+    """
     with open(csv_path, mode='r', encoding='utf-8') as file:
         reader = csv.DictReader(file)
-        _matchweek = 1
         tids = generate_tids(session)
         
         tally = {}
@@ -54,14 +85,19 @@ def load_match_csv_to_table(session: Session, csv_path: str, model, cid: int, si
             home_team = EPL_LU.get(row['HomeTeam'], row['HomeTeam'])
             away_team = EPL_LU.get(row['AwayTeam'], row['AwayTeam'])
 
-            tally['HomeTeam'] = tally.get(home_team, 0) + 1
-            tally['AwayTeam'] = tally.get(away_team, 0) + 1
+            h_games_played = tally.get(home_team, 0)
+            a_games_played = tally.get(away_team, 0)
+
+            curr_matchweek = max(h_games_played, a_games_played) + 1
+
+            tally[home_team] = h_games_played + 1
+            tally[away_team] = a_games_played + 1
                             
             match = models.Match(
                 date=datetime.strptime(row['Date'], '%Y-%m-%d').date(),
-                matchweek=_matchweek,
-                competition_id=cid,
-                season_id=sid,
+                matchweek=curr_matchweek,
+                competition_id=comp_id,
+                season_id=_season_id,
                 home_team_id=tids[home_team],
                 away_team_id=tids[away_team],
                 ft_home_goals=int(row['FTHG']),
@@ -98,8 +134,12 @@ def seed_database():
         load_csv_to_table(session, 'data/seasons.csv', models.Season)
         
         print('Importing relational tables...')     
-        load_csv_to_table(session, 'data/team_competitions.csv', models.TeamCompetition)
-        load_match_csv_to_table(session, 'data/epl_2526_season_matches.csv', models.Match, 1, 1)
+        load_csv_to_table(
+            session, 
+            'data/team_competitions.csv', 
+            models.TeamCompetition
+        )
+        load_match_csv_to_table(session, 'data/epl_2526_season_matches.csv', 1, 1)
         
         print('Database successfully seeded from CSVs.')
         
