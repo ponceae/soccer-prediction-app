@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from collections import defaultdict
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import col, select, Session, SQLModel
 
@@ -14,6 +15,14 @@ async def setup_db(app: FastAPI):
     yield
 
 app = FastAPI(title='Poisson Soccer Prediction Model', lifespan=setup_db)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['http://localhost:5173'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 # +==============+
 #   Quick Routes

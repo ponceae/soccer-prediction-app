@@ -35,11 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currCompId = state.competitionId;
       currSeasonId = state.seasonId;
 
-      if (
-        globalMenuData && 
-        globalMenuData[currCountry] && 
-        globalMenuData[currCountry][currLeagueName]
-      ) {
+      if (globalMenuData?.[currCountry]?.[currLeagueName]) {
         const seasons = globalMenuData[currCountry][currLeagueName];
         renderSeasonSelect(seasons, currCompId, currLeagueName, currCountry);
       }
@@ -152,19 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       data.forEach((team, index) => {
-        let rowClass = '';
-
-        if (index >= 0 && index <= 3) {
-          rowClass = 'ucl';
-        }
-
-        else if (index == 4) {
-          rowClass = 'uel';
-        }
-
-        else if (index >= data.length - 3) {
-          rowClass = 'relegation';
-        }
+        let rowClass = (index >= 0 && index <= 3) ? 'ucl' 
+                    : (index == 4) ? 'uel' 
+                    : (index >= data.length- 3) ? 'relegation' 
+                    : '';
 
         tableHTML += `
           <tr class="${rowClass}" data-team-id="${team.team_id}">
