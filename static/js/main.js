@@ -14,6 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let globalMenuData = null;
 
   history.replaceState({ view: 'home' }, '', window.location.pathname);
+  loadMenuData();
+
+  // +=========================+
+  //       Event Listeners
+  // +=========================+
 
   window.addEventListener('popstate', (event) => {
     const state = event.state;
@@ -30,11 +35,14 @@ document.addEventListener('DOMContentLoaded', () => {
       currCompId = state.competitionId;
       currSeasonId = state.seasonId;
 
-      if (globalMenuData && globalMenuData[currCountry] && globalMenuData[currCountry][currLeagueName]) {
+      if (
+        globalMenuData && 
+        globalMenuData[currCountry] && 
+        globalMenuData[currCountry][currLeagueName]
+      ) {
         const seasons = globalMenuData[currCountry][currLeagueName];
         renderSeasonSelect(seasons, currCompId, currLeagueName, currCountry);
       }
-
       renderLeagueTable(state.competitionId, state.seasonId, false);
     }
     else if (state.view === 'team') {
@@ -49,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
   homeBtn.addEventListener('click', () => {
     sidebar.classList.remove('open');
     mainHeader.innerText = 'Soccer Prediction Model';
-
     tableContainer.innerHTML = '';
   });
 
@@ -64,9 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
   countryListContainer.addEventListener('click', (event) => {
     const clickedHeader = event.target.closest('.country-header');
     if (clickedHeader) {
-      const leagueList = countryHeader.nextElementSibling;
+      const leagueList = clickedHeader.nextElementSibling;
       leagueList.classList.toggle('show');
-      countryHeader.classList.toggle('active');
+      clickedHeader.classList.toggle('active');
       return;
     }
 
@@ -85,130 +92,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  async function displayTeamInfo(teamId, pushToHistory = true) {
-    try {
-      const response = await fetch(`/teams/${teamId}`);
-      const data = await response.json();
-
-      renderTeamInfo(data);
-
-      if (pushToHistory) {
-        history.pushState(
-          { 
-            view: 'team', 
-            teamId: teamId,
-            competitionId: currCompId,
-            seasonId: currSeasonId,
-            leagueName: currLeagueName,
-            country: currCountry,
-          },
-          '',
-          `#team-${teamId}`
-        );
-      }
-    } catch (error) {
-      console.error('Failed to load team data', error);
-      tableContainer.innerHTML = `
-        <p style="padding: 20px; color: #E74C3C;">Unable to load team data.</p>
-      `;
-    }
-  }
+  // +=========================+
+  //     API & Data Fetching
+  // +=========================+
 
   async function loadMenuData() {
     try {
-      const response = await fetch('/menu_data');
-      const data = await response.json();
-
+      const data = await fetchJSON('/menu_data')
       globalMenuData = data;
       renderMenu(data);
     } catch (error) {
       console.error('Failed to load menu data', error);
-      countryListContainer.innerHTML = `
-        <li style="padding: 20px; color: #E74C3C;">Unable to load menu data.</li>
-      `;
-    }
-  }
-
-  function renderTeamInfo(teamData) {
-    tableContainer.innerHTML = `
-      <div class="team-profile-view">
-        <h2>${teamData.name}</h2>
-      </div>
-    `;
-  }
-
-  function renderMenu(menuData) {
-    let menuHTML = '';
-
-    for (const [country, competitions] of Object.entries(menuData)) {
-      let leaguesHTML = '';
-
-      for (const [leagueName, seasons] of Object.entries(competitions)) {
-        const latestSeason = seasons[0];
-
-        leaguesHTML += `
-          <li
-            class="league-item"
-            data-country="${country}"
-            data-league-name="${leagueName}"
-            data-comp-id="${latestSeason.competition_id}"
-            data-season-id="${latestSeason.season_id}"
-          >
-            <span class="league-item-text">${leagueName}</span>
-          </li>
-        `;
-      }
-
-      menuHTML += `
-        <li class="country-item">
-          <div class="country-header">
-            🏴󠁧󠁢󠁥󠁮󠁧󠁿 ${country} <span class="arrow">▼</span>
-          </div>
-          <ul class="league-list">
-            ${leaguesHTML}
-          </ul>
-        </li>
-      `;
-    }
-    countryListContainer.innerHTML = menuHTML;
-  }
-
-  function renderSeasonSelect(seasons, currCompId, leagueName, country) {
-    const headerContainer = document.getElementById('mainHeader');
-
-    const optionsHTML = seasons.map(s =>
-      `<option value="${s.season_id}">${s.season_year}</option>`
-    ).join('');
-
-    headerContainer.innerHTML = `
-      <div class="league-header-container">
-        <div class="league-title-group">
-          <img
-            src="/logos/competitions/${currCompId}.svg"
-            class="competition-badge"
-            alt="${leagueName} logo"
-            onerror="this.style.display='none'"
-          >
-          <div class="league-text">
-            <h2>${leagueName}</h2>
-            <p class="country-subtitle">${country}</p>
-          </div>
-        </div>
-
-        <div class="season-select-group">
-          <label for="seasonSelect">Season:</label>
-          <select id="seasonSelect" class="season-dropdown">
-            ${optionsHTML}
-          </select>
-        </div>
-      </div>
-    `;
-
-    const selectElem = document.getElementById('seasonSelect');
-    selectElem.value = currSeasonId || seasons[0].season_id;
-    selectElem.onchange = (e) => {
-      const selectedSeasonId = e.target.value;
-      renderLeagueTable(currCompId, selectedSeasonId, true)
+      showError(countryListContainer, 'Unable to load menu data.');
     }
   }
 
@@ -216,11 +111,12 @@ document.addEventListener('DOMContentLoaded', () => {
     currCompId = competitionId;
     currSeasonId = seasonId;
     
-    tableContainer.innerHTML = `<p>Loading league standings...</p>`;
+    showLoading(tableContainer, 'Loading league standings...');
 
     try {
-      const response = await fetch(`/leagues/${competitionId}/${seasonId}/league_table`);
-      const data = await response.json();
+      const data = await fetchJSON(
+        `/leagues/${competitionId}/${seasonId}/league_table`
+      );
 
       if (pushToHistory) {
         history.pushState(
@@ -294,15 +190,145 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       tableHTML += `</tbody></table>`;
-
       tableContainer.innerHTML = tableHTML;
+      
     } catch (error) {
       console.error('Failed to load table data', error);
-      tableContainer.innerHTML = `
-        <p style="color:#E74C3C">Error loading league standings.</p>
-      `;
+      showError(tableContainer, 'Error loading league standings.')
     }
   }
 
-  loadMenuData();
+  async function displayTeamInfo(teamId, pushToHistory = true) {
+    showLoading(tableContainer, 'Loading team profile...');
+
+    try {
+      const data = await fetchJSON(`/teams/${teamId}`);
+      renderTeamInfo(data);
+
+      if (pushToHistory) {
+        history.pushState(
+          { 
+            view: 'team', 
+            teamId: teamId,
+            competitionId: currCompId,
+            seasonId: currSeasonId,
+            leagueName: currLeagueName,
+            country: currCountry,
+          },
+          '',
+          `#team-${teamId}`
+        );
+      }
+    } catch (error) {
+      console.error('Failed to load team data', error);
+      showError(tableContainer, 'Unable to load team data.')
+    }
+  }
+
+  // +=========================+
+  //        UI Functions
+  // +=========================+
+
+  function renderMenu(menuData) {
+    let menuHTML = '';
+
+    for (const [country, competitions] of Object.entries(menuData)) {
+      let leaguesHTML = '';
+
+      for (const [leagueName, seasons] of Object.entries(competitions)) {
+        const latestSeason = seasons[0];
+        leaguesHTML += `
+          <li
+            class="league-item"
+            data-country="${country}"
+            data-league-name="${leagueName}"
+            data-comp-id="${latestSeason.competition_id}"
+            data-season-id="${latestSeason.season_id}"
+          >
+            <span class="league-item-text">${leagueName}</span>
+          </li>
+        `;
+      }
+
+      menuHTML += `
+        <li class="country-item">
+          <div class="country-header">
+            🏴󠁧󠁢󠁥󠁮󠁧󠁿 ${country} <span class="arrow">▼</span>
+          </div>
+          <ul class="league-list">
+            ${leaguesHTML}
+          </ul>
+        </li>
+      `;
+    }
+    countryListContainer.innerHTML = menuHTML;
+  }
+
+  function renderSeasonSelect(seasons, currCompId, leagueName, country) {
+    const headerContainer = document.getElementById('mainHeader');
+
+    const optionsHTML = seasons.map(s =>
+      `<option value="${s.season_id}">${s.season_year}</option>`
+    ).join('');
+
+    headerContainer.innerHTML = `
+      <div class="league-header-container">
+        <div class="league-title-group">
+          <img
+            src="/logos/competitions/${currCompId}.svg"
+            class="competition-badge"
+            alt="${leagueName} logo"
+            onerror="this.style.display='none'"
+          >
+          <div class="league-text">
+            <h2>${leagueName}</h2>
+            <p class="country-subtitle">${country}</p>
+          </div>
+        </div>
+
+        <div class="season-select-group">
+          <label for="seasonSelect">Season:</label>
+          <select id="seasonSelect" class="season-dropdown">
+            ${optionsHTML}
+          </select>
+        </div>
+      </div>
+    `;
+
+    const selectElem = document.getElementById('seasonSelect');
+    selectElem.value = currSeasonId || seasons[0].season_id;
+    selectElem.onchange = (e) => {
+      const selectedSeasonId = e.target.value;
+      renderLeagueTable(currCompId, selectedSeasonId, true)
+    }
+  }
+
+  function renderTeamInfo(teamData) {
+    tableContainer.innerHTML = `
+      <div class="team-profile-dashboard">
+        <h2>${teamData.name}</h2>
+        <p>blah</p>
+      </div>
+    `;
+  }
+
+  // +=========================+
+  //      Helper Functions
+  // +=========================+ 
+
+  async function fetchJSON(endpoint) {
+    const response = await(fetch(endpoint));
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status}`);
+    }
+    return response.json();
+  }
+
+  function showLoading(container, message = 'Loading...') {
+    container.innerHTML = `<p class="status-message">${message}</p>`;
+  }
+
+  function showError(container, message = 'An error occured.') {
+    container.innerHTML = `<p class="status-message error">${message}</p>`;
+  }  
 });
