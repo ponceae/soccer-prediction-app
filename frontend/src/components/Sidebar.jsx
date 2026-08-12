@@ -1,9 +1,28 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-export default function Sidebar({ menuData, isOpen, onLeagueClick }) {
+export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar }) {
   const [expandedCountry, setExpandedCountry] = useState(null);
   
+  const navigate = useNavigate();
+  const sidebarRef = useRef(null);
   const sidebarClass = isOpen ? 'sidebar open' : 'sidebar';
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    function handleClickOutside(event) {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        closeSidebar();
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [closeSidebar]); 
 
   if (!menuData) {
     return (
@@ -24,8 +43,14 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick }) {
   };
 
   return (
-    <aside className={sidebarClass}>
-      <div className="sidebar-home">
+    <aside className={sidebarClass} ref={sidebarRef}>
+      <div 
+        className="sidebar-home"
+        onClick={() => {
+          navigate('/')
+          closeSidebar();
+        }}
+      >
         Home
       </div>
 
@@ -54,6 +79,7 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick }) {
                         latestSeason.season_id,
                         leagueName,
                         country,
+                        seasons,
                       )}
                     >
                       <span className="league-item-text">{leagueName}</span>

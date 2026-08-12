@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import LeagueTable from './components/LeagueTable';
+import TeamProfile from './components/TeamProfile';
 import './App.css';
 
 export default function App() {
@@ -53,7 +54,7 @@ export default function App() {
           setLeagueTable(data);
         } catch(err) {
           console.error(err);
-          setError('Unableto load league standings.');
+          setError('Unable to load league standings.');
         }
       }
       fetchTable();
@@ -63,11 +64,11 @@ export default function App() {
     }
   }, [location.pathname, location.state]);
 
-  async function handleLeagueClick(compId, seasonId, leagueName, country) {
+  async function handleLeagueClick(compId, seasonId, leagueName, country, seasons) {
     setIsSidebarOpen(false);
 
     navigate(`/league/${compId}/${seasonId}`, {
-      state: { name: leagueName, country: country }
+      state: { name: leagueName, country: country, seasons: seasons }
     });
   }
 
@@ -75,7 +76,10 @@ export default function App() {
     <div className="app-container">
       <button 
         className={`menu-btn ${isSidebarOpen ? 'white-icon' : ''}`}
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsSidebarOpen(!isSidebarOpen)}
+        }
       >
         ☰
       </button>
@@ -84,6 +88,7 @@ export default function App() {
         menuData={menuData} 
         isOpen={isSidebarOpen}
         onLeagueClick={handleLeagueClick}
+        closeSidebar={() => setIsSidebarOpen(false)}
       />
 
       <main className="landing-page">
@@ -99,6 +104,7 @@ export default function App() {
             <Route path="/league/:compId/:seasonId" element={
               leagueTable && <LeagueTable tableData={leagueTable} currentLeague={currentLeague}/>
             }/>
+            <Route path="/team/:compId/:seasonId/:teamId" element={<TeamProfile/>}/>
           </Routes>
         
         </div>
