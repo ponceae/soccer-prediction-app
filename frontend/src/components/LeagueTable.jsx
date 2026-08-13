@@ -1,9 +1,15 @@
 import { useNavigate, useParams } from "react-router-dom";
+import SeasonSelector from "./SeasonSelector";
 
 export default function LeagueTable({ tableData, currentLeague }) {
   const navigate = useNavigate();
   const { compId, seasonId } = useParams();
   
+  const activeSeason = currentLeague?.seasons?.find(
+    (season) => season.season_id.toString() === seasonId.toString()
+  );
+  const displayYear = activeSeason ? activeSeason.season_year : '';
+
   if (!tableData || !currentLeague) return null;
 
   return (
@@ -24,27 +30,18 @@ export default function LeagueTable({ tableData, currentLeague }) {
             onError={(e) => e.target.style.display= 'none'}
           />
           <div className="league-text">
-            <h2>{currentLeague.name}</h2>
+            <h2>{currentLeague.name} {displayYear}</h2>
             <p className="country-subtitle">{currentLeague.country}</p>
           </div>
         </div>
-        {currentLeague.seasons && (
-          <div className="season-selector">
-            <select
-              className="season-dropdown"
-              value={seasonId}
-              onChange={(e) => navigate(
-                `/league/${compId}/${e.target.value}`, { state: currentLeague }
-              )}
-            >
-              {currentLeague.seasons.map((season) => (
-                <option key={season.season_id} value={season.season_id}>
-                  {season.season_year}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+
+        <SeasonSelector 
+          seasons={currentLeague.seasons}
+          currSeasonId={seasonId}
+          onSeasonChange={(newId) => navigate(
+            `/league/${compId}/${newId}`, { state: currentLeague }
+          )}
+        />
       </div>
 
       <table className="data-table">
@@ -56,16 +53,16 @@ export default function LeagueTable({ tableData, currentLeague }) {
             <th>W</th>
             <th>D</th>
             <th>L</th>
-            <th>GF</th>
-            <th>GA</th>
+            <th>+/-</th>
             <th>GD</th>
             <th>Pts</th>
           </tr>
         </thead>
         <tbody>
           {tableData.map((team, index) => {
-            const rowClass = (index >= 0 && index <= 3) ? 'ucl' 
-                          : (index == 4) ? 'uel' 
+            const rowClass = (index >= 0 && index <= 4) ? 'ucl' 
+                          : (index === 5 || index === 6) ? 'uel' 
+                          : (index === 7) ? 'ucfl'
                           : (index >= tableData.length- 3) ? 'relegation' 
                           : '';
             return (
@@ -93,15 +90,34 @@ export default function LeagueTable({ tableData, currentLeague }) {
                 <td>{team.wins}</td>
                 <td>{team.draws}</td>
                 <td>{team.losses}</td>
-                <td>{team.gf}</td>
-                <td>{team.ga}</td>
-                <td>{team.gd}</td>
+                <td>{team.gf}-{team.ga}</td>
+                <td>{team.gd > 0 ? `+${team.gd}` : team.gd}</td>
                 <td><strong>{team.points}</strong></td>
               </tr>
             );
           })}
         </tbody>
       </table>
+
+      <div className="league-legend-container">
+        <div className="legend-item">
+          <span className="legend-square ucl"></span>
+          <span>Champions League</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-square uel"></span>
+          <span>Europa League</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-square ucfl"></span>
+          <span>Conference League qualification</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-square relegation"></span>
+          <span>Relegation</span>
+        </div>
+      </div>
+
     </div>
   )
 }

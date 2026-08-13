@@ -4,6 +4,9 @@ import {
 	ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip,
 	Radar, RadarChart, PolarGrid, PolarAngleAxis
 } from "recharts";
+import SeasonSelector from "./SeasonSelector";
+import Outcomes from "./Outcomes";
+import Strengths from "./Strengths";
 
 export default function TeamProfile({ team }) {
     const [teamData, setTeamData] = useState(null);
@@ -22,7 +25,6 @@ export default function TeamProfile({ team }) {
 				try {
 					const response = await fetch(`http://localhost:8000/teams/${teamId}/${compId}/${seasonId}/profile`)
 					if (!response.ok) throw new Error('Failed to fetch team profile.');
-					
 					const data = await response.json();
 					setTeamData(data);
 					setLoading(false);
@@ -35,22 +37,18 @@ export default function TeamProfile({ team }) {
 			loadTeamProfile();
     }, [teamId, compId, seasonId]);
 
-		if (loading) {
-			return (
-				<div className="team-profile-container">
-					<h2>Loading {teamName} profile...</h2>
-				</div>
-			);
-		}
+		if (loading) return (
+			<div className="team-profile-container">
+				<h2>Loading {teamName} profile...</h2>
+			</div>
+		);
 
-		if (error) {
-			return (
-				<div className="team-profile-container">
-					<p>{error}</p>
-					<button className="back-btn" onClick={() => navigate(-1)}>Go Back</button>
-				</div>
-			)
-		}
+		if (error) return (
+			<div className="team-profile-container">
+				<p>{error}</p>
+				<button className="back-btn" onClick={() => navigate(-1)}>Go Back</button>
+			</div>
+		);
 
 		const outcomeData = [{
 			name: 'Match Probability',
@@ -68,6 +66,7 @@ export default function TeamProfile({ team }) {
 
 		return (
 			<div className="team-profile-container">
+
 				<div className="table-navigation">
 					<button className="back-btn" onClick={() => navigate(-1)}>
 						&larr; Back to League
@@ -81,64 +80,24 @@ export default function TeamProfile({ team }) {
 						alt={`${teamName} logo`}
 						onError={(e) => e.target.style.display = 'none'}
 					/>
-					<h2 className="profile-team-name">{teamName}</h2>
+					<h2 className="profile-team-name">{teamName} {}</h2>
 					<p className="profile-ppg">
 						Season PPG: {teamData.points_per_game.toFixed(2)}
 					</p>
 
-					{currentLeague?.seasons && (
-						<div className="profile-season-wrapper">
-							<select
-								className="season-dropdown"
-								value={seasonId}
-								onChange={(e) => navigate(
-									`/team/${compId}/${e.target.value}/${teamId}`,
-									{state: { teamName, currentLeague }}
-								)}
-							>
-								{currentLeague.seasons.map((season) => (
-									<option key={season.season_id} value={season.season_id}>
-										{season.season_year}
-									</option>
-								))}
-							</select>
-						</div>
-					)}
+					<SeasonSelector
+						seasons={currentLeague.seasons}
+						currSeasonId={seasonId}
+						onSeasonChange={(newId) => navigate(
+							`/team/${compId}/${newId}/${teamId}`,
+							{state: { teamName, currentLeague }}
+						)}
+					/>
 				</div>
 
 				<div className="graphs-container">
-					
-					<div className="chart-card outcomes-card">
-						<h3 className="chart-title">Outcome Probabilities</h3>
-						<ResponsiveContainer width="100%" height={100}>
-							<BarChart layout="vertical" data={outcomeData} stackOffset="expand">
-								<XAxis type="number" hide/>
-								<YAxis type="category" dataKey="name" hide/>
-								<Tooltip formatter={(value) => `${value}%`}/>
-								<Bar dataKey="Win" stackId="a" fill="#2ECC71"/>
-								<Bar dataKey="Draw" stackId="a" fill="#95A5A6"/>
-								<Bar dataKey="Loss" stackId="a" fill="#E74C3C"/>
-							</BarChart>
-						</ResponsiveContainer>
-
-						<div className="bar-legend">
-							<span><strong className="legend-win">Win:</strong>{outcomeData[0].Win}%</span>
-							<span><strong className="legend-draw">Draw:</strong>{outcomeData[0].Draw}%</span>
-							<span><strong className="legend-loss">Loss:</strong>{outcomeData[0].Loss}%</span>
-						</div>
-					</div>
-
-					<div className="chart-card strengths-card">
-						<h3 className="chart-title-compact">Model Strengths</h3>
-						<ResponsiveContainer width="100%" height={250}>
-							<RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
-								<PolarGrid/>
-								<PolarAngleAxis dataKey="metric" tick={{ fill: '#2C3E50', fontSize: 12 }}/>
-								<Tooltip/>
-								<Radar name={teamName} dataKey="value" stroke="#3498DB" fill="#3498DB" fillOpacity={0.5}/>
-							</RadarChart>
-						</ResponsiveContainer>
-					</div>
+					<Outcomes outcomeData={outcomeData}/>
+					<Strengths radarData={radarData} teamName={teamName}/>
 				</div>
 			</div>
 		);
