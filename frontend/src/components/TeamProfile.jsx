@@ -68,7 +68,10 @@ export default function TeamProfile({ team }) {
 			<div className="team-profile-container">
 
 				<div className="table-navigation">
-					<button className="back-btn" onClick={() => navigate(-1)}>
+					<button className="back-btn" onClick={() => navigate(
+						`/league/${compId}/${seasonId}/summary`,
+						{ state: currentLeague }
+					)}>
 						&larr; Back to League
 					</button>
 				</div>
