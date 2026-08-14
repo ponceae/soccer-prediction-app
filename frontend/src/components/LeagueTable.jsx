@@ -4,45 +4,11 @@ import SeasonSelector from "./SeasonSelector";
 export default function LeagueTable({ tableData, currentLeague }) {
   const navigate = useNavigate();
   const { compId, seasonId } = useParams();
-  
-  const activeSeason = currentLeague?.seasons?.find(
-    (season) => season.season_id.toString() === seasonId.toString()
-  );
-  const displayYear = activeSeason ? activeSeason.season_year : '';
 
   if (!tableData || !currentLeague) return null;
 
   return (
     <div className="table-container">
-      
-      <div className="table-navigation">
-        <button className="back-btn" onClick={() => navigate('/')}>
-          &larr; Back to Home
-        </button>
-      </div>
-
-      <div className="league-header-container">
-        <div className="league-title-group">
-          <img
-            src={`/logos/competitions/${compId}.svg`}
-            className="competition-badge"
-            alt={`${currentLeague.name} logo`}
-            onError={(e) => e.target.style.display= 'none'}
-          />
-          <div className="league-text">
-            <h2>{currentLeague.name} {displayYear}</h2>
-            <p className="country-subtitle">{currentLeague.country}</p>
-          </div>
-        </div>
-
-        <SeasonSelector 
-          seasons={currentLeague.seasons}
-          currSeasonId={seasonId}
-          onSeasonChange={(newId) => navigate(
-            `/league/${compId}/${newId}`, { state: currentLeague }
-          )}
-        />
-      </div>
 
       <table className="data-table">
         <thead>

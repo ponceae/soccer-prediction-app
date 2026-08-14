@@ -240,8 +240,6 @@ app.include_router(league_router)
 app.include_router(prediction_router)
 app.include_router(team_stats_router)
 
-app.mount('/', StaticFiles(directory='static', html=True), name='static')
-
 # +============================+
 #       Helper Functions
 # +============================+

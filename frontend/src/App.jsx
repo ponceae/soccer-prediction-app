@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Navigate, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
+import LeagueLayout from './components/LeagueLayout';
 import LeagueTable from './components/LeagueTable';
 import TeamProfile from './components/TeamProfile';
 import './App.css';
+import LeagueSummary from './components/LeagueSummary';
 
 export default function App() {
   const [menuData, setMenuData] = useState(null);
@@ -21,9 +23,7 @@ export default function App() {
     async function loadMenuData() {
       try {
         const response = await fetch('http://localhost:8000/menu_data');
-        if (!response.ok) {
-          throw new Error('Failed to fetch');
-        }
+        if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
         setMenuData(data);
       } catch(err) {
@@ -40,16 +40,12 @@ export default function App() {
       const compId = parts[2];
       const seasonId = parts[3];
 
-      if (location.state) {
-        setCurrentLeague(location.state);
-      }
+      if (location.state) setCurrentLeague(location.state);
 
       async function fetchTable() {
         try {
           const response = await fetch(`http://localhost:8000/leagues/${compId}/${seasonId}/league_table`);
-          if (!response.ok) {
-            throw new Error('Failed to fetch league table.');
-          }
+          if (!response.ok) throw new Error('Failed to fetch league table.');
           const data = await response.json();
           setLeagueTable(data);
         } catch(err) {
@@ -67,7 +63,7 @@ export default function App() {
   async function handleLeagueClick(compId, seasonId, leagueName, country, seasons) {
     setIsSidebarOpen(false);
 
-    navigate(`/league/${compId}/${seasonId}`, {
+    navigate(`/league/${compId}/${seasonId}/summary`, {
       state: { name: leagueName, country: country, seasons: seasons }
     });
   }
@@ -76,6 +72,7 @@ export default function App() {
     <div className="app-container">
       <button 
         className={`menu-btn ${isSidebarOpen ? 'white-icon' : ''}`}
+        onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation();
           setIsSidebarOpen(!isSidebarOpen)}
@@ -101,9 +98,17 @@ export default function App() {
         
           <Routes>
             <Route path="/" element={null}/>
+
             <Route path="/league/:compId/:seasonId" element={
-              leagueTable && <LeagueTable tableData={leagueTable} currentLeague={currentLeague}/>
-            }/>
+              currentLeague && <LeagueLayout currentLeague={currentLeague}/>
+            }>
+              <Route index element={<Navigate to="table" replace/>}/>
+              <Route path="summary"element={<LeagueSummary/>}/>
+              <Route path="table" element={
+                leagueTable && <LeagueTable tableData={leagueTable} currentLeague={currentLeague}/>
+              }/>
+              <Route path="matchups" element={<div>Matchups</div>}/>
+            </Route>
             <Route path="/team/:compId/:seasonId/:teamId" element={<TeamProfile/>}/>
           </Routes>
         
