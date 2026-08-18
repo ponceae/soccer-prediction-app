@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import DonutChart from "./DonutChart";
 
@@ -18,7 +18,7 @@ export default function LeagueSummary() {
         const data = await response.json();
         setSummaryData(data);
       } catch (error) {
-        console.error('Error fetching summary data.');
+        console.error('Error fetching summary data: ', error);
       } finally {
         setIsLoading(false);
       }

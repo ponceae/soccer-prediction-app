@@ -39,13 +39,13 @@ export default function LeagueLayout({ currentLeague }) {
         />
       </div>
       <nav className="league-tabs">
-        <NavLink to="summary" className="tab-link">
+        <NavLink to="summary" state={currentLeague} className="tab-link">
           Summary
         </NavLink>
-        <NavLink to="table" className="tab-link">
+        <NavLink to="table" state={currentLeague} className="tab-link">
           Table
         </NavLink>
-        <NavLink to="matchups" className="tab-link">
+        <NavLink to="matchups" state={currentLeague} className="tab-link">
           Matchups
         </NavLink>
       </nav>

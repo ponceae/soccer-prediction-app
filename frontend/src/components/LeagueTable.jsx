@@ -1,5 +1,4 @@
 import { useNavigate, useParams } from "react-router-dom";
-import SeasonSelector from "./SeasonSelector";
 
 export default function LeagueTable({ tableData, currentLeague }) {
   const navigate = useNavigate();

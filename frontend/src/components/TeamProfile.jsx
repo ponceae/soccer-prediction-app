@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { 
-	ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip,
-	Radar, RadarChart, PolarGrid, PolarAngleAxis
-} from "recharts";
 import SeasonSelector from "./SeasonSelector";
 import Outcomes from "./Outcomes";
 import Strengths from "./Strengths";
 
-export default function TeamProfile({ team }) {
+export default function TeamProfile() {
     const [teamData, setTeamData] = useState(null);
     const [loading, setLoading]= useState(true);
     const [error, setError] = useState(null);
@@ -69,10 +65,10 @@ export default function TeamProfile({ team }) {
 
 				<div className="table-navigation">
 					<button className="back-btn" onClick={() => navigate(
-						`/league/${compId}/${seasonId}/summary`,
+						`/league/${compId}/${seasonId}/table`,
 						{ state: currentLeague }
 					)}>
-						&larr; Back to League
+						&larr; Back to Standings
 					</button>
 				</div>
 

@@ -1,23 +1,28 @@
 import { useState, useEffect } from 'react';
 import { Navigate, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+
+import './App.css';
 import Sidebar from './components/Sidebar';
 import LeagueLayout from './components/LeagueLayout';
 import LeagueTable from './components/LeagueTable';
 import TeamProfile from './components/TeamProfile';
-import './App.css';
 import LeagueSummary from './components/LeagueSummary';
 
 export default function App() {
   const [menuData, setMenuData] = useState(null);
   const [leagueTable, setLeagueTable]= useState(null);
-  const [currentLeague, setCurrentLeague] = useState(null);
-  const [currentTeam, setCurrentTeam] = useState(null);
-  const [loading, setLoading] = useState(null);
   const [error, setError] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isLeagueRoute = location.pathname.startsWith('/league/');
+  const parts = location.pathname.split('/');
+  const compId = isLeagueRoute ? parts[2]: null;
+  const seasonId = isLeagueRoute ? parts[3]: null;
+
+  const currentLeague = isLeagueRoute ? location.state : null;
 
   useEffect(() => {
     async function loadMenuData() {
@@ -35,13 +40,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (location.pathname.startsWith('/league/')) {
-      const parts = location.pathname.split('/');
-      const compId = parts[2];
-      const seasonId = parts[3];
-
-      if (location.state) setCurrentLeague(location.state);
-
+    if (isLeagueRoute && compId && seasonId) {
       async function fetchTable() {
         try {
           const response = await fetch(`http://localhost:8000/leagues/${compId}/${seasonId}/league_table`);
@@ -54,11 +53,8 @@ export default function App() {
         }
       }
       fetchTable();
-    } else {
-      setLeagueTable(null);
-      setCurrentLeague(null);
-    }
-  }, [location.pathname, location.state]);
+    } 
+  }, [compId, seasonId, isLeagueRoute]);
 
   async function handleLeagueClick(compId, seasonId, leagueName, country, seasons) {
     setIsSidebarOpen(false);
