@@ -22,7 +22,7 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [closeSidebar]); 
+  }, [closeSidebar, isOpen]); 
 
   if (!menuData) {
     return (
