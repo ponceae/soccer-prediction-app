@@ -16,7 +16,13 @@ export default function Strengths({ radarData, teamName }) {
           <PolarGrid/>
           <PolarAngleAxis dataKey="metric" tick={{ fill: '#2C3E50', fontSize: 12 }}/>
           <Tooltip/>
-          <Radar name={teamName} dataKey="value" stroke="#3498DB" fill="#3498DB" fillOpacity={0.5}/>
+          <Radar 
+            name={teamName} 
+            dataKey="value" 
+            stroke="#3498DB" 
+            fill="#3498DB" 
+            fillOpacity={0.5}
+          />
         </RadarChart>
       </ResponsiveContainer>
     </div>

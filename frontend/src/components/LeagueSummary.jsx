@@ -7,18 +7,20 @@ export default function LeagueSummary() {
 
   const [summaryData, setSummaryData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   useEffect(() => {
     const fetchSummaryStats = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`http://localhost:8000/leagues/${compId}/${seasonId}/summary`);
+        const url = `http://localhost:8000/leagues/${compId}/${seasonId}/summary`;
+        const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch summary data.');
-
         const data = await response.json();
         setSummaryData(data);
-      } catch (error) {
-        console.error('Error fetching summary data: ', error);
+      } catch (err) {
+        console.error(err);
+        setError(`Error, unable to load summary data: ${err.message}`)
       } finally {
         setIsLoading(false);
       }
@@ -26,11 +28,15 @@ export default function LeagueSummary() {
     fetchSummaryStats();
   }, [compId, seasonId]);
 
+  if (error) {
+    return <div className="status-message error">{error}</div>
+  }
+
   if (isLoading || !summaryData) {
     return <div className="loading-state">Loading league summary...</div>;
   }
 
-  const { goal_averages, btts_rate, over_rate }= summaryData;
+  const { goal_averages, btts_rate, over_rate } = summaryData;
   const { home_league_goal_avg, away_league_goal_avg } = goal_averages;
 
   const formatRate = (rate) => `${(rate * 100).toFixed(1)}%`;
@@ -38,11 +44,11 @@ export default function LeagueSummary() {
 
   const bttsData = [
     { name: 'BTTS (Yes)', value: Number((btts_rate * 100).toFixed(1)) },
-    { name: 'BTTS (No)', value: Number(((1 - btts_rate)* 100).toFixed(1)) }
+    { name: 'BTTS (No)', value: Number(((1 - btts_rate) * 100).toFixed(1)) }
   ];
 
   const overData = [
-    { name: 'Over 2.5', value: Number((btts_rate * 100).toFixed(1)) },
+    { name: 'Over 2.5', value: Number((over_rate * 100).toFixed(1)) },
     { name: 'Under 2.5', value: Number(((1 - over_rate) * 100).toFixed(1)) },
   ];
 
@@ -78,7 +84,7 @@ export default function LeagueSummary() {
       </div>
 
       <h3 className="section-title">Outcome Probabilities</h3>
-      <div  className="charts-container">
+      <div className="charts-container">
         <DonutChart title="Both Teams to Score" data={bttsData}/>
         <DonutChart title="Over/Under 2.5 Goals" data={overData}/>
       </div>

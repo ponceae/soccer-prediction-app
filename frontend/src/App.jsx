@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { Navigate, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 
 import './App.css';
@@ -28,12 +28,12 @@ export default function App() {
     async function loadMenuData() {
       try {
         const response = await fetch('http://localhost:8000/menu_data');
-        if (!response.ok) throw new Error('Failed to fetch');
+        if (!response.ok) throw new Error('Failed to fetch menu data.');
         const data = await response.json();
         setMenuData(data);
-      } catch(err) {
+      } catch (err) {
         console.error(err);
-        setError('Unable to load menu data.');
+        setError(`Error, unable to load menu data: ${err.message}`);
       }
     }
     loadMenuData();
@@ -43,26 +43,32 @@ export default function App() {
     if (isLeagueRoute && compId && seasonId) {
       async function fetchTable() {
         try {
-          const response = await fetch(`http://localhost:8000/leagues/${compId}/${seasonId}/league_table`);
+          const url = (
+            `http://localhost:8000/leagues/${compId}/${seasonId}/league_table`
+          );
+          const response = await fetch(url);
           if (!response.ok) throw new Error('Failed to fetch league table.');
           const data = await response.json();
           setLeagueTable(data);
-        } catch(err) {
+        } catch (err) {
           console.error(err);
-          setError('Unable to load league standings.');
+          setError(`Error, unable to load league standings: ${err.message}`);
         }
       }
       fetchTable();
     } 
   }, [compId, seasonId, isLeagueRoute]);
 
-  async function handleLeagueClick(compId, seasonId, leagueName, country, seasons) {
+  function handleLeagueClick(compId, seasonId, leagueName, country, seasons) {
     setIsSidebarOpen(false);
-
     navigate(`/league/${compId}/${seasonId}/summary`, {
       state: { name: leagueName, country: country, seasons: seasons }
     });
   }
+
+  const handleCloseSidebar = useCallback(() => {
+    setIsSidebarOpen(false);
+  }, []);
 
   return (
     <div className="app-container">
@@ -81,7 +87,7 @@ export default function App() {
         menuData={menuData} 
         isOpen={isSidebarOpen}
         onLeagueClick={handleLeagueClick}
-        closeSidebar={() => setIsSidebarOpen(false)}
+        closeSidebar={handleCloseSidebar}
       />
 
       <main className="landing-page">
@@ -99,10 +105,18 @@ export default function App() {
               currentLeague && <LeagueLayout currentLeague={currentLeague}/>
             }>
               <Route index element={<Navigate to="table" replace/>}/>
-              <Route path="summary"element={<LeagueSummary/>}/>
-              <Route path="table" element={
-                leagueTable && <LeagueTable tableData={leagueTable} currentLeague={currentLeague}/>
-              }/>
+              <Route path="summary" element={<LeagueSummary/>}/>
+              <Route 
+                path="table" 
+                element={
+                  leagueTable && (
+                    <LeagueTable 
+                      tableData={leagueTable} 
+                      currentLeague={currentLeague}
+                    />
+                  )
+                }
+              />
               <Route path="matchups" element={<div>Matchups</div>}/>
             </Route>
             <Route path="/team/:compId/:seasonId/:teamId" element={<TeamProfile/>}/>

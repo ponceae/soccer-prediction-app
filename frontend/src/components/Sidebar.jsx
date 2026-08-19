@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const countryFlags = {
+  'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+  'Spain': '🇪🇸',
+};
+
 export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar }) {
   const [expandedCountry, setExpandedCountry] = useState(null);
   
@@ -16,7 +21,6 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
         closeSidebar();
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
@@ -32,14 +36,10 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
         </div>
       </aside>
     );
-  }  
+  }
 
   const toggleCountry = (country) => {
-    if (expandedCountry === country) {
-      setExpandedCountry(null);
-    } else {
-      setExpandedCountry(country);
-    }
+    setExpandedCountry(expandedCountry === country ? null : country);
   };
 
   return (
@@ -47,7 +47,7 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
       <div 
         className="sidebar-home"
         onClick={() => {
-          navigate('/')
+          navigate('/');
           closeSidebar();
         }}
       >
@@ -56,15 +56,16 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
 
       <ul className="country-list">
         {Object.entries(menuData).map(([country, leagues]) => {
-          const isExpanded = expandedCountry === country
+          const isExpanded = expandedCountry === country;
 
           return (
             <li key={country} className="country-item">
               <div 
                 className={`country-header ${isExpanded ? 'active' : ''}`}
                 onClick={() => toggleCountry(country)}
-                >
-                  🏴󠁧󠁢󠁥󠁮󠁧󠁿 {country} <span className="arrow">▼</span>
+              >
+                {countryFlags[country] || '🌎'} {country} 
+                <span className="arrow">▼</span>
               </div>
               <ul className={`league-list ${isExpanded ? 'show' : ''}`}>
                 {Object.entries(leagues).map(([leagueName, seasons]) => {
@@ -86,7 +87,6 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
                     </li>
                   );
                 })}
-
               </ul>
             </li>
           );

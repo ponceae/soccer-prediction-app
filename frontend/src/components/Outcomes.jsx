@@ -23,9 +23,15 @@ export default function Outcomes({ outcomeData }) {
       </ResponsiveContainer>
 
       <div className="bar-legend">
-        <span><strong className="legend-win">Win:</strong>{outcomeData[0].Win}%</span>
-        <span><strong className="legend-draw">Draw:</strong>{outcomeData[0].Draw}%</span>
-        <span><strong className="legend-loss">Loss:</strong>{outcomeData[0].Loss}%</span>
+        <span>
+          <strong className="legend-win">Win:</strong>{outcomeData[0].Win}%
+        </span>
+        <span>
+          <strong className="legend-draw">Draw:</strong>{outcomeData[0].Draw}%
+        </span>
+        <span>
+          <strong className="legend-loss">Loss:</strong>{outcomeData[0].Loss}%
+        </span>
       </div>
     </div>
   );

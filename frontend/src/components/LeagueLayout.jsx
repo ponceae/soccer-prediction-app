@@ -11,33 +11,39 @@ export default function LeagueLayout({ currentLeague }) {
   const displayYear = activeSeason ? activeSeason.season_year : '';
 
   return (
-    <div  className="league-layout">
+    <div className="league-layout">
+
       <div className="table-navigation">
         <button className="back-btn" onClick={() => navigate('/')}>
           &larr; Back to Home
         </button>
       </div>
+
       <div className="league-header-container">
         <div className="league-title-group">
           <img
             src={`/logos/competitions/${compId}.svg`}
             className="competition-badge"
-            alt={`${currentLeague.name} logo`}
-            onError={(e) => e.target.style.display= 'none'}
+            alt={`${currentLeague?.name} logo`}
+            onError={(e) => { e.target.style.display= 'none' }}
           />
           <div className="league-text">
-            <h2>{currentLeague.name} {displayYear}</h2>
+            <h2>{currentLeague?.name} {displayYear}</h2>
             <p className="country-subtitle">{currentLeague.country}</p>
           </div>
         </div>
+        
         <SeasonSelector 
-          seasons={currentLeague.seasons}
+          seasons={currentLeague?.seasons || []}
           currSeasonId={seasonId}
-          onSeasonChange={(newId) => navigate(
-            `/league/${compId}/${newId}`, { state: currentLeague }
-          )}
+          onSeasonChange={(newId) => 
+            navigate(`/league/${compId}/${newId}`, { 
+              state: currentLeague 
+            })
+          }
         />
       </div>
+
       <nav className="league-tabs">
         <NavLink to="summary" state={currentLeague} className="tab-link">
           Summary

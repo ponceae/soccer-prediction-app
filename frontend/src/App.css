@@ -286,15 +286,15 @@ body {
 }
 
 /* Qualification Colors */
-.data-table tbody tr.ucl td:first-child {
+.data-table tbody tr.tier-1 td:first-child {
   border-left: 5px solid #2ECC71 !important;
 }
 
-.data-table tbody tr.uel td:first-child {
+.data-table tbody tr.tier-2 td:first-child {
   border-left: 5px solid #3498DB !important;
 }
 
-.data-table tbody tr.ucfl td:first-child {
+.data-table tbody tr.tier-3 td:first-child {
   border-left: 5px solid #8fbedd !important
 }
 
@@ -447,9 +447,9 @@ body {
   border-radius: 2px;
 }
 
-.legend-square.ucl { background-color: #2ECC71; }
-.legend-square.uel { background-color: #3498DB; }
-.legend-square.ucfl { background-color: #8fbedd; }
+.legend-square.tier-1 { background-color: #2ECC71; }
+.legend-square.tier-2 { background-color: #3498DB; }
+.legend-square.tier-3 { background-color: #8fbedd; }
 .legend-square.relegation { background-color: #E74C3C; }
 
 /*
