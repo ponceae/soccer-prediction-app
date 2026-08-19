@@ -40,10 +40,10 @@ class MatchBase(SQLModel):
     date: date
     matchweek: int
     
-    competition_id: int = Field(foreign_key='competition_id', index=True)
-    season_id: int = Field(foreign_key='season_id', index=True)
-    home_team_id: int = Field(foreign_key='team_id', index=True)
-    away_team_id: int = Field(foreign_key='team_id', index=True)
+    competition_id: int
+    season_id: int
+    home_team_id: int 
+    away_team_id: int
     
     # full time / half time goals & results
     ft_home_goals: int

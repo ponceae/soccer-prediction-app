@@ -11,6 +11,10 @@
   font-family: Arial, sans-serif;
 }
 
+html, body, #root, .landing-page, .league-layout {
+  overflow: visible !important;
+}
+
 body {
   background-color: #F4F7F6;
   color: #333;
@@ -377,7 +381,7 @@ body {
   background-color: white;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
   width: 100%;
 }
 
@@ -583,4 +587,220 @@ body {
   padding: 20px;
   color: #666;
   text-align: center;
+}
+
+/*
++=======================+
+  Matchweek Grid & Menu
++=======================+
+*/
+
+.matchups-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 220px);
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: #F4F7F6;
+}
+
+.matchweek-jumper {
+  background-color: #F4F7F6;
+  padding: 15px 20px;
+  border-bottom: 2px solid #E2E8F0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.matchups-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 20px 40px 20px;
+}
+
+.grid-toggle-btn {
+  background-color: #2C3E50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.grid-toggle-btn:hover {
+  background-color: #1A252F;
+}
+
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+  gap: 8px;
+  width: 100%;
+  max-width: 500px;
+  margin-top: 15px;
+}
+
+.grid-square-btn {
+  background-color: white;
+  border: 1px solid #CBD5E1;
+  color: #2C3E50;
+  padding: 10px 0;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.grid-square-btn:hover {
+  background-color: #3498DB;
+  color: white;
+  border-color: #3498DB;
+}
+
+/*
++========================+
+  Matchweek Rows & Scores
++========================+
+*/
+
+.matchweek-group {
+  margin-bottom: 30px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  scroll-margin-top: 10px;
+}
+
+.matchweek-header {
+  background-color: #2C3E50;
+  color: white;
+  padding: 12px 20px;
+  text-align: center;
+}
+
+.matchweek-header h3 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.matchweek-games {
+  display: flex;
+  flex-direction: column;
+}
+
+.match-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #EEE;
+  transition: background-color 0.2s;
+}
+
+.match-row:hover {
+  background-color: #F9F9F9;
+}
+
+.match-row:last-child {
+  border-bottom: none;
+}
+
+.match-date {
+  font-size: 0.85rem;
+  color: #7F8C8D;
+  margin-bottom: 8px;
+}
+
+.match-scoreline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px;
+}
+
+.team-home {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  text-align: right;
+  font-weight: 500;
+  font-size: 1rem;
+  padding-right: 20px;
+  color: #333;
+}
+
+.team-away {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 1rem;
+  padding-left: 20px;
+  color: #333;
+}
+
+.score-badge {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.score {
+  background-color: #F1F2F6;
+  color: #2C3E50;
+  font-weight: bold;
+  font-size: 1.1rem;
+  padding: 6px 16px;
+  border-radius: 6px;
+  min-width: 70px;
+  text-align: center;
+  border: 1px solid #DDD;
+}
+
+.scroll-top-btn {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  background-color: #2C3E50;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+}
+
+.scroll-top-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.scroll-top-btn:hover {
+  background-color: #3498DB;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }

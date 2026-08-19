@@ -15,7 +15,7 @@ export default function Strengths({ radarData, teamName }) {
         <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
           <PolarGrid/>
           <PolarAngleAxis dataKey="metric" tick={{ fill: '#2C3E50', fontSize: 12 }}/>
-          <Tooltip/>
+          <Tooltip formatter={(value) => value.toFixed(2)}/>
           <Radar 
             name={teamName} 
             dataKey="value" 

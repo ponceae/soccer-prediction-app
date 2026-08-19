@@ -7,6 +7,7 @@ import LeagueLayout from './components/LeagueLayout';
 import LeagueTable from './components/LeagueTable';
 import TeamProfile from './components/TeamProfile';
 import LeagueSummary from './components/LeagueSummary';
+import Matchups from './components/Matchups';
 
 export default function App() {
   const [menuData, setMenuData] = useState(null);
@@ -117,7 +118,7 @@ export default function App() {
                   )
                 }
               />
-              <Route path="matchups" element={<div>Matchups</div>}/>
+              <Route path="matchups" element={<Matchups/>}/>
             </Route>
             <Route path="/team/:compId/:seasonId/:teamId" element={<TeamProfile/>}/>
           </Routes>

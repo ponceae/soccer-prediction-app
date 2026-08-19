@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from collections import defaultdict
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import selectinload
 from sqlmodel import col, select, Session, SQLModel
 
 from analytics import Analytics, HomeAwayID
@@ -194,6 +194,27 @@ def get_matchup_prediction(
         },
         'likely_scoreline': analytics.scoreline_chance(teams),
     }
+    
+@league_router.get('/matchups', response_model=list[schemas.MatchWithTeams])
+def get_league_matchups(
+    competition_id: int,
+    season_id: int,
+    session: Session = Depends(get_session)
+):
+    statement = (
+        select(models.Match)
+        .where(
+            models.Match.competition_id == competition_id,
+            models.Match.season_id == season_id,
+        )
+        .options(
+            selectinload(models.Match.home_team), # type: ignore
+            selectinload(models.Match.away_team), # type: ignore
+        )
+        .order_by(col(models.Match.date).desc())
+    )
+    
+    return session.exec(statement).all()
 
 # +============================+
 #     Team Specific Routes
