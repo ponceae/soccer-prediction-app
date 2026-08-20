@@ -24,9 +24,9 @@ def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
     Read a csv file and load its contents into the specified database table.
 
     Args:
-        session (Session): The current working database session.
-        csv_path (str): The filepath to the csv.
-        model (type[SQLModel]): The SQLModel class representing the table.
+        session (Session): The current database workspace for the current transaction.
+        csv_path (str): The path to the `.csv` file.
+        model (type[SQLModel]): The SQLModel class mapping to the database table.
     """
     with open(csv_path, mode='r', encoding='utf-8') as file:
         reader = csv.DictReader(file)
@@ -43,10 +43,10 @@ def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
 
 def generate_tids(session: Session) -> dict[str, int]:
     """
-    Retrieve all the teams from the database and create a lookup dictionary.
+    Retrieve all the teams from the current workspace and create a lookup dictionary.
 
     Args:
-        session (Session): The current working database session.
+        session (Session): The current database workspace for the current transaction.
 
     Returns:
         dict[str, int]: A mapping of all the teams to their unique IDs.
@@ -67,11 +67,11 @@ def load_match_csv_to_table(
     _season_id: int
 ):
     """
-    Read match data from a csv file and load it into the `Match` database table.
+    Read match data from a `.csv` file and load it into the `Match` database table.
 
     Args:
-        session (Session): THe current working database session.
-        csv_path (str): The filepath to to the csv.
+        session (Session): The current database workspace for the current transaction.
+        csv_path (str): The path to to the `.csv` file.
         comp_id (int): The competition ID the matches belong to.
         _season_id (int): The season ID the matches belong to.
     """
