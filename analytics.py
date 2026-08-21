@@ -27,13 +27,13 @@ class Analytics:
                 - Home goal averages
                 - Away goal averages
         """
-        filter = select(Match).where(
+        statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id, 
                 Match.season_id == self.season_id,
             )
         )
-        competition_matches = self.session.exec(filter).all()
+        competition_matches = self.session.exec(statement).all()
         total_matches = len(competition_matches)
         
         if not total_matches:
@@ -53,7 +53,7 @@ class Analytics:
         both home and away.
         
         Args:
-            team_id (int): The id for the team to evaluate.
+            team_id (int): The id of the team to evaluate.
 
         Returns:
             tuple[float, float, float, float]: The team's
@@ -66,14 +66,14 @@ class Analytics:
         """
         league_h_goal_avg, league_a_goal_avg = self.league_goal_averages()
 
-        h_match_filter = select(Match).where(
+        h_match_statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id,
                 Match.season_id == self.season_id,
                 Match.home_team_id == team_id
             )
         )
-        a_match_filter = select(Match).where(
+        a_match_statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id,
                 Match.season_id == self.season_id,
@@ -81,8 +81,8 @@ class Analytics:
             )
         )
         
-        h_matches = self.session.exec(h_match_filter).all()
-        a_matches = self.session.exec(a_match_filter).all()
+        h_matches = self.session.exec(h_match_statement).all()
+        a_matches = self.session.exec(a_match_statement).all()
         
         total_h_matches = len(h_matches)
         total_a_matches = len(a_matches)
@@ -246,13 +246,13 @@ class Analytics:
         Returns:
             float: The competition season BTTS rate.
         """
-        filter = select(Match).where(
+        statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id,
                 Match.season_id == self.season_id,
             )
         )
-        matches = self.session.exec(filter).all()
+        matches = self.session.exec(statement).all()
         total_matches = len(matches)
         
         if not total_matches:
@@ -274,13 +274,13 @@ class Analytics:
         Returns:
             float: The rate of over 2.5 goals being scored.
         """
-        filter = select(Match).where(
+        statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id,
                 Match.season_id == self.season_id
             )
         )
-        matches = self.session.exec(filter).all()
+        matches = self.session.exec(statement).all()
         total_matches = len(matches)
         
         if not total_matches:
@@ -320,7 +320,7 @@ class Analytics:
         """
         wins, losses, draws, total_matches = self.team_outcomes(team_id)
         
-        filter = select(Match).where(
+        statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id,
                 Match.season_id == self.season_id,
@@ -328,9 +328,9 @@ class Analytics:
                     Match.home_team_id == team_id,
                     Match.away_team_id == team_id,
                 ),
-            )
+            ),
         )
-        team_matches = self.session.exec(filter).all()
+        team_matches = self.session.exec(statement).all()
         
         gf, ga = 0, 0
         for match in team_matches:
@@ -397,7 +397,7 @@ class Analytics:
                 - Draws
                 - Total competition season matches played
         """
-        filter = select(Match).where(
+        statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id,
                 Match.season_id == self.season_id,
@@ -407,7 +407,7 @@ class Analytics:
                 ),
             )
         )
-        team_matches = self.session.exec(filter).all()
+        team_matches = self.session.exec(statement).all()
         total_matches = len(team_matches)
         wins, draws, losses = 0, 0, 0
         
