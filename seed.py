@@ -2,7 +2,7 @@ import csv
 from database import engine
 from datetime import datetime
 from sqlmodel import select, Session, SQLModel
-
+from typing import Any
 import models
     
 EPL_LU = {
@@ -18,7 +18,24 @@ EPL_LU = {
     'Wolves': 'Wolverhampton Wanderers',
     'Bournemouth': 'AFC Bournemouth'
 }
-    
+
+# +=====================================+
+# TODO: Create a function(s) that will check for 
+# duplicates in the independent and
+# relational databases.
+# -----------------------------------------
+# Utility Duplicate Checkers
+# +=====================================+
+
+# def check_duplicate_match(session: Session, row: dict[str | Any, str | Any]):
+#     statement = select(models.Match).where(
+#         models.Match.competition_id == None,
+#         models.Match.season_id == None,
+#         models.Match.home_team == None,
+#         models.Match.away_team == None,    
+#     )
+
+
 def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
     """
     Read a csv file and load its contents into the specified database table.

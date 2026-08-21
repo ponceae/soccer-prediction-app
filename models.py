@@ -22,6 +22,15 @@ class Competition(CompetitionBase, table=True):
     country: str = Field(index=True)
 
 class Match(MatchBase, table=True):
+    __table_args__ = (
+        UniqueConstraint(
+            'competition_id',
+            'season_id',
+            'home_team_id',
+            'away_team_id',
+            name='unique_comp_season_matchup',
+        ),
+    )
     id: Optional[int] = Field(default=None, primary_key=True)
     
     competition_id: int = Field(foreign_key='competition.id', index=True)
