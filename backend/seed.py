@@ -30,6 +30,11 @@ LEAGUE_COUNTRIES = {
     'epl': 'England',
 }
 
+# +=======================+
+#   Loaders/CSV Parsers
+# +=======================+
+
+
 def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
     """
     Open and read a csv file and load its contents into the specified database table.
@@ -39,18 +44,22 @@ def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
         csv_path (str): The path to the `.csv` file.
         model (type[SQLModel]): The SQLModel class mapping to the database table.
     """
-    with open(csv_path, mode='r', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            for key, value in row.items():
-                if value == 'True':
-                    row[key]= True
-                elif value == 'False':
-                    row[key] = False
-                elif key == 'date':
-                    row[key] = datetime.strptime(value, '%Y-%m-%d').date()
-            session.add(model(**row))
-    session.commit()
+    # with open(csv_path, mode='r', encoding='utf-8') as file:
+    #     reader = csv.DictReader(file)
+    #     for row in reader:
+    #         for key, value in row.items():
+    #             if value == 'True':
+    #                 row[key]= True
+    #             elif value == 'False':
+    #                 row[key] = False
+    #             elif key == 'date':
+    #                 row[key] = datetime.strptime(value, '%Y-%m-%d').date()
+    #             if model is models.Team or model is models.Competition:
+    #                 pass
+    #             elif model is models.Season:
+    #                 pass
+    #         session.add(model(**row))
+    # session.commit()
 
 def generate_tids(session: Session) -> dict[str, int]:
     """
@@ -134,7 +143,22 @@ def load_match_csv_to_table(
             session.add(match)
     session.commit()          
 
+# +==================================+
+#   Filename Parsers/Table Validators
+# +==================================+
+
 def parse_csv_filename(path: str) -> tuple[str, str]:
+    """ 
+    Parse and return the metadata contained in the CSV filename.
+    Should be of the pattern 'data/{League Name}_{Season Years}_season_matches.csv'
+
+    Args:
+        path (str): The name of the csv file to parse.
+    Returns:
+        tuple[str, str]: A tuple containing filename metadata in the form:
+            - League name
+            - League season years
+    """
     new_path = path.split('_')
 
     league = new_path[0].split('/')
@@ -142,7 +166,7 @@ def parse_csv_filename(path: str) -> tuple[str, str]:
 
     return league[0], new_path[1]
 
-def existing_independent_entry(model_class: type[T], session: Session, curr_entry: str):
+def validate_unique_entry(model_class: type[T], session: Session, curr_entry: str):
     if model_class == models.Team or model_class == models.Competition:
         statement = select(model_class).where(
             getattr(model_class, 'name') == curr_entry
@@ -154,16 +178,18 @@ def existing_independent_entry(model_class: type[T], session: Session, curr_entr
     
     entry = session.exec(statement).first()
     
-    # Entry exists or does not exist
     if entry:
-        pass
-    else:
-        pass
+        return True
+    return False
     
     # TODO: 
     # Figure out if the function should have the power to update the current
     # session, or if it should return a flag to the loader to either skip or write
     # the entry.
+
+# +=======================+
+#          Main
+# +=======================+
 
 def seed_database():
     print(parse_csv_filename('data/epl_2526_season_matches.csv'))

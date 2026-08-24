@@ -5,9 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import selectinload
 from sqlmodel import col, select, Session, SQLModel
 
-from backend.analytics import Analytics, HomeAwayID
-from backend.database import engine, get_session
-import backend.models as models, backend.schemas as schemas
+from analytics import Analytics, HomeAwayID
+from database import engine, get_session
+import models as models, schemas as schemas
 
 @asynccontextmanager
 async def setup_db(app: FastAPI):
