@@ -1,9 +1,12 @@
 import csv
 from database import engine
 from datetime import datetime
-from sqlmodel import and_, select, Session, SQLModel
-from typing import Any
+from sqlmodel import select, Session, SQLModel
+from typing import TypeVar
+
 import models as models
+    
+T = TypeVar('T', bound=SQLModel)
     
 EPL_LU = {
     'Tottenham': 'Tottenham Hotspur',
@@ -19,20 +22,13 @@ EPL_LU = {
     'Bournemouth': 'AFC Bournemouth'
 }
 
-# +=====================================+
-# TODO: Create a function(s) that will check for 
-# duplicates in the independent and
-# relational databases.
-# -----------------------------------------
-# Utility Duplicate Checkers
-# +=====================================+
+F_SEASONS = {
+    '2526': '2025-26',
+}
 
-def check_duplicate_match(session: Session, row: dict[str, Any]):
-    statement = select(models.Match).where(
-        and_(
-            models.Match.competition_id == row['']
-        )
-    )
+LEAGUE_COUNTRIES = {
+    'epl': 'England',
+}
 
 def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
     """
@@ -138,13 +134,36 @@ def load_match_csv_to_table(
             session.add(match)
     session.commit()          
 
-def parse_csv_filename(path: str):
+def parse_csv_filename(path: str) -> tuple[str, str]:
     new_path = path.split('_')
 
     league = new_path[0].split('/')
     league.remove('data')
 
-    return *league, new_path[1]
+    return league[0], new_path[1]
+
+def existing_independent_entry(model_class: type[T], session: Session, curr_entry: str):
+    if model_class == models.Team or model_class == models.Competition:
+        statement = select(model_class).where(
+            getattr(model_class, 'name') == curr_entry
+        )
+    elif model_class == models.Season:
+        statement = select(models.Season).where(
+            models.Season.year == curr_entry
+        )
+    
+    entry = session.exec(statement).first()
+    
+    # Entry exists or does not exist
+    if entry:
+        pass
+    else:
+        pass
+    
+    # TODO: 
+    # Figure out if the function should have the power to update the current
+    # session, or if it should return a flag to the loader to either skip or write
+    # the entry.
 
 def seed_database():
     print(parse_csv_filename('data/epl_2526_season_matches.csv'))
