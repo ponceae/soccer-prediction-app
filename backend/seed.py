@@ -1,9 +1,9 @@
 import csv
 from database import engine
 from datetime import datetime
-from sqlmodel import select, Session, SQLModel
+from sqlmodel import and_, select, Session, SQLModel
 from typing import Any
-import models
+import models as models
     
 EPL_LU = {
     'Tottenham': 'Tottenham Hotspur',
@@ -27,18 +27,16 @@ EPL_LU = {
 # Utility Duplicate Checkers
 # +=====================================+
 
-# def check_duplicate_match(session: Session, row: dict[str | Any, str | Any]):
-#     statement = select(models.Match).where(
-#         models.Match.competition_id == None,
-#         models.Match.season_id == None,
-#         models.Match.home_team == None,
-#         models.Match.away_team == None,    
-#     )
-
+def check_duplicate_match(session: Session, row: dict[str, Any]):
+    statement = select(models.Match).where(
+        and_(
+            models.Match.competition_id == row['']
+        )
+    )
 
 def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
     """
-    Read a csv file and load its contents into the specified database table.
+    Open and read a csv file and load its contents into the specified database table.
 
     Args:
         session (Session): The current database workspace for the current transaction.
@@ -140,25 +138,34 @@ def load_match_csv_to_table(
             session.add(match)
     session.commit()          
 
+def parse_csv_filename(path: str):
+    new_path = path.split('_')
+
+    league = new_path[0].split('/')
+    league.remove('data')
+
+    return *league, new_path[1]
+
 def seed_database():
-    print('Creating database tables...')
-    SQLModel.metadata.create_all(engine)
+    print(parse_csv_filename('data/epl_2526_season_matches.csv'))
+    # print('Creating database tables...')
+    # SQLModel.metadata.create_all(engine)
     
-    with Session(engine) as session:
-        print('Importing independent tables...')
-        load_csv_to_table(session, 'data/teams.csv', models.Team)
-        load_csv_to_table(session, 'data/competitions.csv', models.Competition)
-        load_csv_to_table(session, 'data/seasons.csv', models.Season)
+    # with Session(engine) as session:
+    #     print('Importing independent tables...')
+    #     load_csv_to_table(session, 'data/teams.csv', models.Team)
+    #     load_csv_to_table(session, 'data/competitions.csv', models.Competition)
+    #     load_csv_to_table(session, 'data/seasons.csv', models.Season)
         
-        print('Importing relational tables...')     
-        load_csv_to_table(
-            session, 
-            'data/team_competitions.csv', 
-            models.TeamCompetition
-        )
-        load_match_csv_to_table(session, 'data/epl_2526_season_matches.csv', 1, 1)
+    #     print('Importing relational tables...')     
+    #     load_csv_to_table(
+    #         session, 
+    #         'data/team_competitions.csv', 
+    #         models.TeamCompetition
+    #     )
+    #     load_match_csv_to_table(session, 'data/epl_2526_season_matches.csv', 1, 1)
         
-        print('Database successfully seeded from CSVs.')
+    #     print('Database successfully seeded from CSVs.')
         
 if __name__ == '__main__':
     seed_database()

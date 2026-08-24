@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import math
 from sqlmodel import and_, or_, Session, select
 
-from models import Match
+from backend.models import Match
 
 MAX_GOAL_THRESHOLD = 8
 
