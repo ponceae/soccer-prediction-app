@@ -44,22 +44,22 @@ def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
         csv_path (str): The path to the `.csv` file.
         model (type[SQLModel]): The SQLModel class mapping to the database table.
     """
-    # with open(csv_path, mode='r', encoding='utf-8') as file:
-    #     reader = csv.DictReader(file)
-    #     for row in reader:
-    #         for key, value in row.items():
-    #             if value == 'True':
-    #                 row[key]= True
-    #             elif value == 'False':
-    #                 row[key] = False
-    #             elif key == 'date':
-    #                 row[key] = datetime.strptime(value, '%Y-%m-%d').date()
-    #             if model is models.Team or model is models.Competition:
-    #                 pass
-    #             elif model is models.Season:
-    #                 pass
-    #         session.add(model(**row))
-    # session.commit()
+    with open(csv_path, mode='r', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            for key, value in row.items():
+                if value == 'True':
+                    row[key]= True
+                elif value == 'False':
+                    row[key] = False
+                elif key == 'date':
+                    row[key] = datetime.strptime(value, '%Y-%m-%d').date()
+                if model is models.Team or model is models.Competition:
+                    pass
+                elif model is models.Season:
+                    pass
+            session.add(model(**row))
+    session.commit()
 
 def generate_tids(session: Session) -> dict[str, int]:
     """

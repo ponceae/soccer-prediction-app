@@ -360,7 +360,8 @@ body {
   margin-top: 10px;
 }
 
-.profile-ppg {
+.profile-ppg,
+.profile-clean-sheets {
   font-size: 1.2rem;
   color: #7F8C8D;
   font-weight: bold;

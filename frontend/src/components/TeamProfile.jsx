@@ -86,6 +86,9 @@ export default function TeamProfile() {
         <p className="profile-ppg">
           Season PPG: {teamData.points_per_game.toFixed(2)}
         </p>
+        <p className="profile-clean-sheets">
+          Season Clean Sheets: {teamData.clean_sheets.total_clean_sheets}
+        </p>
 
         <SeasonSelector
           seasons={currentLeague?.seasons || []}

@@ -294,13 +294,16 @@ class Analytics:
         
         return over_count / total_matches
     
-    def team_clean_sheets(self, team_id: int) -> int:
+    def team_clean_sheets(self, team_id: int) -> tuple[int, int, int]:
         """ 
         Find and return the number of clean sheets that the given team achieved in a 
         given competition season.
         
         Returns:
-            int: The amount of team clean sheets for the competition season.
+            tuple[int, int, int]: The following team clean sheet stats:
+                - Home games
+                - Away games
+                - Total clean sheets
         """
         statement = select(Match).where(
             and_(
@@ -315,18 +318,18 @@ class Analytics:
         
         matches = self.session.exec(statement).all()
         total_matches = len(matches)
-        h_cs_counter, a_cs_counter, total_cs_counter = 0, 0, 0
+        h_cs_counter, a_cs_counter = 0, 0
         
         if not total_matches:
-            return 0
+            return 0, 0, 0
         
         for match in matches:
             if match.home_team_id == team_id and match.ft_away_goals == 0:
-                cs_counter += 1
+                h_cs_counter += 1
             elif match.away_team_id == team_id and match.ft_home_goals == 0:
-                cs_counter += 1
+                a_cs_counter += 1
             
-        return cs_counter
+        return h_cs_counter, a_cs_counter, (h_cs_counter + a_cs_counter)
         
     def league_table_stats(
         self, 

@@ -254,7 +254,11 @@ def get_team_profile(
             'loss_rate': losses,
             'draw_rate': draws,
         },
-        'clean_sheets': analytics.team_clean_sheets(team_id)
+        'clean_sheets': {
+            'home_clean_sheets': h_clean_sheets,
+            'away_clean_sheets': a_clean_sheets,
+            'total_clean_sheets': total_clean_sheets,
+        },
         'points_per_game': analytics.ppg(team_id)
     }
 
