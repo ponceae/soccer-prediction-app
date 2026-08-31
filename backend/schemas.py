@@ -126,8 +126,14 @@ class TeamOutcomes(BaseModel):
     win_rate: float
     loss_rate: float
     draw_rate: float
+    
+class CleanSheetResponse(BaseModel):
+    home_clean_sheets: int 
+    away_clean_sheets: int 
+    total_clean_sheets: int
         
 class TeamProfileResponse(BaseModel):
     strengths: TeamStrengths
     outcomes: TeamOutcomes
+    clean_sheets: CleanSheetResponse
     points_per_game: float
