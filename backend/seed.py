@@ -65,7 +65,7 @@ def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
                 elif model is models.Season:
                     duplicate = validate_unique_entry(model, session, row['year'])
                 elif model is models.TeamCompetition:
-                    duplicate = validate_unique_teamcompetition(
+                    duplicate = validate_unique_teamcompetition_entry(
                         model, 
                         session, 
                         team_id,
@@ -134,7 +134,7 @@ def load_match_csv_to_table(
             tally[away_team] = a_games_played + 1
              
             # Tally updates must occur before duplicate rows are skipped.
-            duplicate = validate_unique_match(
+            duplicate = validate_unique_match_entry(
                 models.Match, 
                 session,
                 comp_id,
@@ -227,7 +227,7 @@ def validate_unique_entry(
     
     return entry is not None
 
-def validate_unique_teamcompetition(
+def validate_unique_teamcompetition_entry(
     model_class: type[models.TeamCompetition], 
     session: Session, 
     team_id: int,
@@ -260,7 +260,7 @@ def validate_unique_teamcompetition(
     
     return entry is not None 
 
-def validate_unique_match(
+def validate_unique_match_entry(
     model_class: type[models.Match],
     session: Session,
     competition_id: int,
