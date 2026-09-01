@@ -1,10 +1,10 @@
 import csv
 from database import engine
-from datetime import datetime
-from sqlmodel import select, Session, SQLModel
+from datetime import date, datetime
+from sqlmodel import and_, select, Session, SQLModel
 from typing import TypeVar
 
-import models as models
+import models
     
 T = TypeVar('T', bound=SQLModel)
     
@@ -54,11 +54,26 @@ def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
                     row[key] = False
                 elif key == 'date':
                     row[key] = datetime.strptime(value, '%Y-%m-%d').date()
+                elif key == 'team_id':
+                    team_id = int(row[key])
+                elif key == 'competition_id':
+                    comp_id = int(row[key])
+                elif key == 'season_id':
+                    season_id = int(row[key])
                 if model is models.Team or model is models.Competition:
-                    pass
+                    duplicate = validate_unique_entry(model, session, row['name'])
                 elif model is models.Season:
-                    pass
-            session.add(model(**row))
+                    duplicate = validate_unique_entry(model, session, row['year'])
+                elif model is models.TeamCompetition:
+                    duplicate = validate_unique_teamcompetition(
+                        model, 
+                        session, 
+                        team_id,
+                        comp_id,
+                        season_id,
+                    )
+            if not duplicate:
+                session.add(model.model_validate(row))
     session.commit()
 
 def generate_tids(session: Session) -> dict[str, int]:
@@ -84,7 +99,7 @@ def load_match_csv_to_table(
     session: Session, 
     csv_path: str, 
     comp_id: int, 
-    _season_id: int
+    _season_id: int,
 ):
     """
     Read match data from a `.csv` file and load it into the `Match` database table.
@@ -105,6 +120,11 @@ def load_match_csv_to_table(
             home_team = EPL_LU.get(row['HomeTeam'], row['HomeTeam'])
             away_team = EPL_LU.get(row['AwayTeam'], row['AwayTeam'])
 
+            # Matchweek is inferred from cumulative team appearances because this 
+            # loader only processes complete historical season CSVs in batch order.
+            # 
+            # DO NOT reuse this logic for incremental/live match ingestion.
+            
             h_games_played = tally.get(home_team, 0)
             a_games_played = tally.get(away_team, 0)
 
@@ -112,35 +132,47 @@ def load_match_csv_to_table(
 
             tally[home_team] = h_games_played + 1
             tally[away_team] = a_games_played + 1
-                            
-            match = models.Match(
-                date=datetime.strptime(row['Date'], '%Y-%m-%d').date(),
-                matchweek=curr_matchweek,
-                competition_id=comp_id,
-                season_id=_season_id,
-                home_team_id=tids[home_team],
-                away_team_id=tids[away_team],
-                ft_home_goals=int(row['FTHG']),
-                ft_away_goals=int(row['FTAG']),
-                ft_result=row['FTR'],
-                ht_home_goals=int(row['HTHG']),
-                ht_away_goals=int(row['HTAG']),
-                ht_result=row['HTR'],
-                referee=row['Referee'],
-                home_shots=int(row['HS']),
-                away_shots=int(row['AS']),
-                home_sot=int(row['HST']),
-                away_sot=int(row['AST']),
-                home_fouls=int(row['HF']),
-                away_fouls=int(row['AF']),
-                home_corners=int(row['HC']),
-                away_corners=int(row['AC']),
-                home_yellow_cards=int(row['HY']),
-                away_yellow_cards=int(row['AY']),
-                home_red_cards=int(row['HR']),
-                away_red_cards=int(row['AR']),
+             
+            # Tally updates must occur before duplicate rows are skipped.
+            duplicate = validate_unique_match(
+                models.Match, 
+                session,
+                comp_id,
+                _season_id,
+                tids[home_team],
+                tids[away_team],
+                datetime.strptime(row['Date'], '%Y-%m-%d').date(),
             )
-            session.add(match)
+            
+            if not duplicate:
+                match = models.Match(
+                    date=datetime.strptime(row['Date'], '%Y-%m-%d').date(),
+                    matchweek=curr_matchweek,
+                    competition_id=comp_id,
+                    season_id=_season_id,
+                    home_team_id=tids[home_team],
+                    away_team_id=tids[away_team],
+                    ft_home_goals=int(row['FTHG']),
+                    ft_away_goals=int(row['FTAG']),
+                    ft_result=row['FTR'],
+                    ht_home_goals=int(row['HTHG']),
+                    ht_away_goals=int(row['HTAG']),
+                    ht_result=row['HTR'],
+                    referee=row['Referee'],
+                    home_shots=int(row['HS']),
+                    away_shots=int(row['AS']),
+                    home_sot=int(row['HST']),
+                    away_sot=int(row['AST']),
+                    home_fouls=int(row['HF']),
+                    away_fouls=int(row['AF']),
+                    home_corners=int(row['HC']),
+                    away_corners=int(row['AC']),
+                    home_yellow_cards=int(row['HY']),
+                    away_yellow_cards=int(row['AY']),
+                    home_red_cards=int(row['HR']),
+                    away_red_cards=int(row['AR']),
+                )
+                session.add(match)
     session.commit()          
 
 # +==================================+
@@ -166,7 +198,22 @@ def parse_csv_filename(path: str) -> tuple[str, str]:
 
     return league[0], new_path[1]
 
-def validate_unique_entry(model_class: type[T], session: Session, curr_entry: str):
+def validate_unique_entry(
+    model_class: type[T], 
+    session: Session, 
+    curr_entry: str
+) -> bool:
+    """
+    Read a table row and determine if its entry already exists in the database.
+
+    Args:
+        model_class (type[T]): The SQLModel class mapping to the database table.
+        session (Session): The current database workspace for the current transaction.
+        curr_entry (str): The table row to read.
+
+    Returns:
+        bool: `True` if the entry already exists, `False` otherwise.
+    """
     if model_class == models.Team or model_class == models.Competition:
         statement = select(model_class).where(
             getattr(model_class, 'name') == curr_entry
@@ -178,39 +225,104 @@ def validate_unique_entry(model_class: type[T], session: Session, curr_entry: st
     
     entry = session.exec(statement).first()
     
-    if entry:
-        return True
-    return False
+    return entry is not None
+
+def validate_unique_teamcompetition(
+    model_class: type[models.TeamCompetition], 
+    session: Session, 
+    team_id: int,
+    competition_id: int,
+    season_id: int,
+) -> bool:
+    """
+    Read a table row and determine if its entry already exists in the database.
+
+    Args:
+        model_class (type[models.TeamCompetition]): The SQLModel class mapping to the 
+            database table.
+        session (Session): The current database workspace for the current transaction.
+        team_id (int): The entry's team ID.
+        competition_id (int): The entry's competition ID.
+        season_id: (int): The entry's season ID.
+
+    Returns:
+        bool: `True` if the entry already exists, `False` otherwise.
+    """
+    statement = select(model_class).where(
+        and_(
+            model_class.team_id == team_id,
+            model_class.competition_id == competition_id,
+            model_class.season_id == season_id,
+        ),
+    )
     
-    # TODO: 
-    # Figure out if the function should have the power to update the current
-    # session, or if it should return a flag to the loader to either skip or write
-    # the entry.
+    entry = session.exec(statement).first()
+    
+    return entry is not None 
+
+def validate_unique_match(
+    model_class: type[models.Match],
+    session: Session,
+    competition_id: int,
+    season_id: int,
+    home_team_id: int,
+    away_team_id: int,
+    date: date,
+) -> bool:
+    """
+    Read a table row and determine if its entry already exists in the database.
+
+    Args:
+        model_class (type[models.Match]): The SQLModel class mapping to the database 
+            table.
+        session (Session): The current database workspace for the current transaction.
+        team_id (int): The entry's team ID.
+        competition_id (int): The entry's competition ID.
+        season_id: (int): The entry's season ID.
+        home_team_id (int): The entry's home team ID.
+        away_team_id (int): The entry's away team ID.
+        date (datetime): The entry's date.
+
+    Returns:
+        bool: `True` if the entry already exists, `False` otherwise.
+    """
+    statement = select(model_class).where(
+        and_(
+            model_class.competition_id == competition_id,
+            model_class.season_id == season_id,
+            model_class.home_team_id == home_team_id,
+            model_class.away_team_id == away_team_id,
+            model_class.date == date,
+        ),
+    )
+    
+    entry = session.exec(statement).first()
+    
+    return entry is not None
 
 # +=======================+
 #          Main
 # +=======================+
 
 def seed_database():
-    print(parse_csv_filename('data/epl_2526_season_matches.csv'))
-    # print('Creating database tables...')
-    # SQLModel.metadata.create_all(engine)
+    print('Creating database tables...')
+    SQLModel.metadata.create_all(engine)
     
-    # with Session(engine) as session:
-    #     print('Importing independent tables...')
-    #     load_csv_to_table(session, 'data/teams.csv', models.Team)
-    #     load_csv_to_table(session, 'data/competitions.csv', models.Competition)
-    #     load_csv_to_table(session, 'data/seasons.csv', models.Season)
+    with Session(engine) as session:
+        print('Importing independent tables...')
+        load_csv_to_table(session, 'data/teams.csv', models.Team)
+        load_csv_to_table(session, 'data/competitions.csv', models.Competition)
+        load_csv_to_table(session, 'data/seasons.csv', models.Season)
         
-    #     print('Importing relational tables...')     
-    #     load_csv_to_table(
-    #         session, 
-    #         'data/team_competitions.csv', 
-    #         models.TeamCompetition
-    #     )
-    #     load_match_csv_to_table(session, 'data/epl_2526_season_matches.csv', 1, 1)
+        print('Importing relational tables...')     
+        load_csv_to_table(
+            session, 
+            'data/team_competitions.csv', 
+            models.TeamCompetition
+        )
+        load_match_csv_to_table(session, 'data/epl_2526_season_matches.csv', 1, 1)
         
-    #     print('Database successfully seeded from CSVs.')
+        print('Database successfully seeded from CSVs.')
         
 if __name__ == '__main__':
     seed_database()

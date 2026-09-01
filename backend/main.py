@@ -241,7 +241,12 @@ def get_team_profile(
     
     h_atk, h_def, a_atk, a_def = analytics.team_strengths(team_id)
     wins, draws, losses = analytics.outcome_percentages(team_id)
-    h_clean_sheets, a_clean_sheets, total_clean_sheets = analytics.team_clean_sheets(team_id)
+    (
+        h_clean_sheets, 
+        a_clean_sheets, 
+        total_clean_sheets,
+    ) = analytics.team_clean_sheets(team_id)
+    
     return {
         'strengths': {
             'home_attack': h_atk, 
