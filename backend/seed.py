@@ -30,9 +30,16 @@ LEAGUE_COUNTRIES = {
     'epl': 'England',
 }
 
-# +=======================+
+# +=====================+
 #   Loaders/CSV Parsers
-# +=======================+
+# +=====================+
+
+def derive_and_load_teamcompetition(
+    session: Session, 
+    csv_path: str, 
+    model: type[SQLModel]
+):
+    pass
 
 
 def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
@@ -64,6 +71,7 @@ def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
                     duplicate = validate_unique_entry(model, session, row['name'])
                 elif model is models.Season:
                     duplicate = validate_unique_entry(model, session, row['year'])
+                # MAY OR MAY NOT CHANGE BELOW!!
                 elif model is models.TeamCompetition:
                     duplicate = validate_unique_teamcompetition_entry(
                         model, 
@@ -314,12 +322,16 @@ def seed_database():
         load_csv_to_table(session, 'data/competitions.csv', models.Competition)
         load_csv_to_table(session, 'data/seasons.csv', models.Season)
         
-        print('Importing relational tables...')     
-        load_csv_to_table(
-            session, 
-            'data/team_competitions.csv', 
-            models.TeamCompetition
-        )
+        # TODO: I need to implement TeamCompetition so that its ids are derived 
+        # from Team, Competition, and Season. `is_primary` needs to be derived 
+        # somehow from the Competition.
+        
+        # print('Importing relational tables...')     
+        # load_csv_to_table(
+        #     session, 
+        #     'data/team_competitions.csv', 
+        #     models.TeamCompetition
+        # )
         load_match_csv_to_table(session, 'data/epl_2526_season_matches.csv', 1, 1)
         
         print('Database successfully seeded from CSVs.')
