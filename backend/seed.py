@@ -39,8 +39,19 @@ def derive_and_load_teamcompetition(
     csv_path: str, 
     model: type[SQLModel]
 ):
-    pass
-
+    # Use the match batch to derive TeamCompetitions, then use those
+    # TeamCompetitions to create Matches
+    # ------
+    # Essentially, build the candidates each row (home and away team and their
+    # associated attributes) Then check if that TeamCompetition already exists in the
+    # session. If not, then create the TeamCompetition record.
+    with open(csv_path, mode='r', encoding='utf-8') as file:
+        tids = generate_tids(session)
+        reader = csv.DictReader(file)
+        for row in reader:
+            home_team = EPL_LU.get(row['HomeTeam'], row['HomeTeam'])
+            away_team = EPL_LU.get(row['AwayTeam'], row['AwayTeam'])
+            
 
 def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
     """
@@ -55,11 +66,7 @@ def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
         reader = csv.DictReader(file)
         for row in reader:
             for key, value in row.items():
-                if value == 'True':
-                    row[key]= True
-                elif value == 'False':
-                    row[key] = False
-                elif key == 'date':
+                if key == 'date':
                     row[key] = datetime.strptime(value, '%Y-%m-%d').date()
                 elif key == 'team_id':
                     team_id = int(row[key])
@@ -205,6 +212,8 @@ def parse_csv_filename(path: str) -> tuple[str, str]:
     league.remove('data')
 
     return league[0], new_path[1]
+
+# def derive_competition_and_season_id(session: Session, league: str, season: str):
 
 def validate_unique_entry(
     model_class: type[T], 
