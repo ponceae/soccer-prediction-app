@@ -68,25 +68,19 @@ def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
             for key, value in row.items():
                 if key == 'date':
                     row[key] = datetime.strptime(value, '%Y-%m-%d').date()
-                elif key == 'team_id':
-                    team_id = int(row[key])
-                elif key == 'competition_id':
-                    comp_id = int(row[key])
-                elif key == 'season_id':
-                    season_id = int(row[key])
                 if model is models.Team or model is models.Competition:
                     duplicate = validate_unique_entry(model, session, row['name'])
                 elif model is models.Season:
                     duplicate = validate_unique_entry(model, session, row['year'])
                 # MAY OR MAY NOT CHANGE BELOW!!
-                elif model is models.TeamCompetition:
-                    duplicate = validate_unique_teamcompetition_entry(
-                        model, 
-                        session, 
-                        team_id,
-                        comp_id,
-                        season_id,
-                    )
+                # elif model is models.TeamCompetition:
+                #     duplicate = validate_unique_teamcompetition_entry(
+                #         model, 
+                #         session, 
+                #         team_id,
+                #         comp_id,
+                #         season_id,
+                #     )
             if not duplicate:
                 session.add(model.model_validate(row))
     session.commit()
@@ -247,9 +241,9 @@ def validate_unique_entry(
 def validate_unique_teamcompetition_entry(
     model_class: type[models.TeamCompetition], 
     session: Session, 
-    team_id: int,
-    competition_id: int,
-    season_id: int,
+    team_name: str,
+    competition_name: str,
+    season_year: str,
 ) -> bool:
     """
     Read a table row and determine if its entry already exists in the database.
@@ -265,15 +259,20 @@ def validate_unique_teamcompetition_entry(
     Returns:
         bool: `True` if the entry already exists, `False` otherwise.
     """
-    statement = select(model_class).where(
-        and_(
-            model_class.team_id == team_id,
-            model_class.competition_id == competition_id,
-            model_class.season_id == season_id,
-        ),
-    )
+    # statement = select(model_class).where(
+    #     and_(
+    #         model_class.team == team_name,
+    #         model_class.competition == competition_id,
+    #         model_class.season == season_id,
+    #     ),
+    # )
     
-    entry = session.exec(statement).first()
+    t_statement = session.exec(select(models.Team)).all()
+    c_statement = session.exec(select(models.Competition)).all()
+    s_statement = session.exec(select(models.Season)).all()
+
+    
+    entry = session.exec(select(models)).first()
     
     return entry is not None 
 
