@@ -108,7 +108,7 @@ def get_menu_data(session: Session = Depends(get_session)):
         .group_by(col(models.Competition.id), col(models.Season.id))
         .order_by(
             col(models.Competition.country), 
-            col(models.Competition.name), 
+            col(models.Competition.code), 
             col(models.Season.year).desc(),
         )
     )
@@ -169,6 +169,21 @@ def get_full_league_table(
         })
 
     return sorted(table, key=lambda x: (x['points'], x['gd'], x['gf']), reverse=True)
+
+# @league_router.get('/knockouts', response_model=list[schemas.MatchWithTeams])
+# def get_league_knockouts(
+#     competition_id: int,
+#     season_id: int,
+#     session: Session = Depends(get_session)
+# ):
+#     statement = (
+#         select(models.Match)
+#         .where(
+#             models.Match.competition_id == competition_id,
+#             models.Match.season_id == season_id,
+#             models.Match.
+#         )
+#     )
 
 # +============================+
 #     Matchup Specific Routes

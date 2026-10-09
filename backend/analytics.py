@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 import math
-from sqlmodel import and_, or_, Session, select
+from sqlmodel import and_, or_, Session, select, func
 
-from models import Match
+from models import Match, TeamCompetition
 
 MAX_GOAL_THRESHOLD = 8
 
@@ -355,12 +355,24 @@ class Analytics:
 
                 For the current competition season.
         """
-        wins, losses, draws, total_matches = self.team_outcomes(team_id)
+        team_count = self.session.exec(
+            select(func.coutn(TeamCompetition.team_id))
+            .where(
+                TeamCompetition.competition_id == self.competition_id,
+                TeamCompetition.season_id == self.season_id,
+            )
+        ).one()
+        
+        max_regular_season_games = (team_count - 1) * 2
+        
+        
+        # wins, losses, draws, total_matches = self.team_outcomes(team_id)
         
         statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id,
                 Match.season_id == self.season_id,
+                Match.matchweek <= max_regular_season_games,
                 or_(
                     Match.home_team_id == team_id,
                     Match.away_team_id == team_id,
@@ -369,6 +381,7 @@ class Analytics:
         )
         team_matches = self.session.exec(statement).all()
         
+        wins, losses, draws = 0, 0, 0
         gf, ga = 0, 0
         for match in team_matches:
             if match.home_team_id == team_id:
@@ -382,6 +395,33 @@ class Analytics:
         points = (wins * 3) + draws
         
         return wins, losses, draws, total_matches, gf, ga, gd, points
+    
+        # for match in team_matches:
+        #     if match.home_team_id == team_id:
+        #         gf += match.ft_home_goals
+        #         ga += match.ft_away_goals
+        #         if match.ft_home_goals > match.ft_away_goals:
+        #             wins += 1
+        #         elif match.ft_home_goals < match.ft_away_goals:
+        #             losses += 1
+        #         else:
+        #             draws += 1
+            
+        #     elif match.away_team_id == team_id:
+        #         gf += match.ft_away_goals
+        #         ga += match.ft_home_goals
+        #         if match.ft_away_goals > match.ft_home_goals:
+        #             wins += 1
+        #         elif match.ft_away_goals < match.ft_home_goals:
+        #             losses += 1
+        #         else:
+        #             draws += 1
+        
+        # total_matches = wins + losses + draws
+        # gd = gf - ga
+        # points = (wins * 3) + draws
+        
+        # return wins, losses, draws, total_matches, gf, ga, gd, points
     
     def scoreline_chance(self, team_ids: HomeAwayID) -> tuple[int, int]:
         """

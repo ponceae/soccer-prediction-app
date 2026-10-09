@@ -20,6 +20,8 @@ class Competition(CompetitionBase, table=True):
     name: str = Field(index=True, unique=True)
     type: str = Field(index=True)
     country: str = Field(index=True)
+    code: str = Field(index=True)
+    knockout: bool = Field(default=False, index=True)
 
 class Match(MatchBase, table=True):
     __table_args__ = (

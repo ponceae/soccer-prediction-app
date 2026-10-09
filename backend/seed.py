@@ -1,6 +1,6 @@
 import csv
 from database import engine
-from datetime import date, datetime
+from datetime import date, datetime, time
 from sqlmodel import and_, select, Session, SQLModel
 from typing import TypeVar
 
@@ -8,7 +8,8 @@ import models
     
 T = TypeVar('T', bound=SQLModel)
     
-EPL_LU = {
+TEAM_LU = {
+    # English Premier League
     'Tottenham': 'Tottenham Hotspur',
     'Spurs': 'Tottenham Hotspur',
     'Brighton': 'Brighton and Hove Albion',
@@ -19,14 +20,33 @@ EPL_LU = {
     'West Ham': 'West Ham United',
     'Newcastle': 'Newcastle United',
     'Wolves': 'Wolverhampton Wanderers',
-    'Bournemouth': 'AFC Bournemouth'
+    'Bournemouth': 'AFC Bournemouth',
+    
+    # English Championship
+    'Coventry': 'Coventry City',
+    'Ipswich': 'Ipswich Town',
+    'Hull': 'Hull City',
+    'Derby': 'Derby County',
+    'Norwich': 'Norwich City',
+    'Birmingham': 'Birmingham City',
+    'Swansea': 'Swansea City',
+    'Preston': 'Preston North End',
+    'QPR': 'Queens Park Rangers',
+    'Stoke': 'Stoke City',
+    'Charlton': 'Charlton Athletic',
+    'Blackburn': 'Blackburn Rovers',
+    'West Brom': 'West Bromwich Albion',
+    'Oxford': 'Oxford United',
+    'Leicester': 'Leicester City',
+    'Sheffield Weds': 'Sheffield Wednesday',
 }
 
 COMP_LU = {
     'epl': 'Premier League',
+    'championship': 'Championship'
 }
 
-PRIMARY_COMP = {'epl'}
+PRIMARY_COMP = {'epl', 'championship'}
 
 F_SEASONS = {
     '2526': '2025-26',
@@ -34,6 +54,7 @@ F_SEASONS = {
 
 LEAGUE_COUNTRIES = {
     'epl': 'England',
+    'championship': 'England'
 }
 
 # +=====================+
@@ -61,8 +82,8 @@ def derive_and_load_teamcompetition(
         processed_team_ids = set()
         
         for row in reader:
-            home_team = EPL_LU.get(row['HomeTeam'], row['HomeTeam'])
-            away_team = EPL_LU.get(row['AwayTeam'], row['AwayTeam'])
+            home_team = TEAM_LU.get(row['HomeTeam'], row['HomeTeam'])
+            away_team = TEAM_LU.get(row['AwayTeam'], row['AwayTeam'])
             
             home_id = tids.get(home_team)
             away_id = tids.get(away_team)
@@ -98,6 +119,8 @@ def load_csv_to_table(session: Session, csv_path: str, model: type[SQLModel]):
             for key, value in row.items():
                 if key == 'date':
                     row[key] = datetime.strptime(value, '%Y-%m-%d').date()
+                elif key == 'knockout':
+                    row[key] = value.strip().lower() == 'true'
                 if model is models.Team or model is models.Competition:
                     duplicate = validate_unique_entry(model, session, row['name'])
                 elif model is models.Season:
@@ -147,8 +170,8 @@ def load_match_csv_to_table(
         tally = {}
         
         for row in reader:            
-            home_team = EPL_LU.get(row['HomeTeam'], row['HomeTeam'])
-            away_team = EPL_LU.get(row['AwayTeam'], row['AwayTeam'])
+            home_team = TEAM_LU.get(row['HomeTeam'], row['HomeTeam'])
+            away_team = TEAM_LU.get(row['AwayTeam'], row['AwayTeam'])
 
             # Matchweek is inferred from cumulative team appearances because this 
             # loader only processes complete historical season CSVs in batch order.
@@ -171,12 +194,14 @@ def load_match_csv_to_table(
                 _season_id,
                 tids[home_team],
                 tids[away_team],
-                datetime.strptime(row['Date'], '%Y-%m-%d').date(),
+                datetime.strptime(row['Date'], '%d/%m/%Y').date(),
+                datetime.strptime(row['Time'], '%H:%M').time()
             )
             
             if not duplicate:
                 match = models.Match(
-                    date=datetime.strptime(row['Date'], '%Y-%m-%d').date(),
+                    date=datetime.strptime(row['Date'], '%d/%m/%Y').date(),
+                    time=datetime.strptime(row['Time'], '%H:%M').time(),
                     matchweek=curr_matchweek,
                     competition_id=comp_id,
                     season_id=_season_id,
@@ -329,6 +354,7 @@ def validate_unique_match_entry(
     home_team_id: int,
     away_team_id: int,
     date: date,
+    time: time,
 ) -> bool:
     """
     Read a table row and determine if its entry already exists in the database.
@@ -354,6 +380,7 @@ def validate_unique_match_entry(
             model_class.home_team_id == home_team_id,
             model_class.away_team_id == away_team_id,
             model_class.date == date,
+            model_class.time == time,
         ),
     )
     
@@ -375,28 +402,28 @@ def seed_database():
         load_csv_to_table(session, 'data/competitions.csv', models.Competition)
         load_csv_to_table(session, 'data/seasons.csv', models.Season)
         
-        match_csv = 'data/epl_2526_season_matches.csv'
+        match_csvs = [
+            'data/epl_2526_season_matches.csv',
+            'data/championship_2526_season_matches.csv'
+        ]
         
-        league, season_str = parse_csv_filename(match_csv)
-        
-        comp_id, season_id, is_primary = derive_competition_and_season_id(
-            session, league, season_str
-        )
-        
-        # TODO: I need to implement TeamCompetition so that its ids are derived 
-        # from Team, Competition, and Season. `is_primary` needs to be derived 
-        # somehow from the Competition.
-        
-        print('Importing relational tables...')     
-        derive_and_load_teamcompetition(
-            session,
-            match_csv,
-            models.TeamCompetition,
-            comp_id, 
-            season_id,
-            is_primary,
-        )
-        load_match_csv_to_table(session, match_csv, comp_id, season_id)
+        for match_file in match_csvs:
+            league, season_str = parse_csv_filename(match_file)
+            
+            comp_id, season_id, is_primary = derive_competition_and_season_id(
+                session, league, season_str
+            )
+            
+            print('Importing relational tables...')     
+            derive_and_load_teamcompetition(
+                session,
+                match_file,
+                models.TeamCompetition,
+                comp_id, 
+                season_id,
+                is_primary,
+            )
+            load_match_csv_to_table(session, match_file, comp_id, season_id)
         
         print('Database successfully seeded from CSVs.')
         

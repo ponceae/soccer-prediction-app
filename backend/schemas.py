@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, time
 from pydantic import BaseModel
 from sqlmodel import SQLModel
 from typing import Optional
@@ -20,6 +20,8 @@ class CompetitionRead(SQLModel):
     name: str
     type: str
     country: str
+    code: str
+    knockout: bool
     
 # +================+
 #    Base Schemas
@@ -38,6 +40,7 @@ class CompetitionBase(SQLModel):
 
 class MatchBase(SQLModel):
     date: date
+    time: time
     matchweek: int
     
     competition_id: int
