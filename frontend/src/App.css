@@ -294,11 +294,15 @@ body {
   border-left: 5px solid #2ECC71 !important;
 }
 
-.data-table tbody tr.tier-2 td:first-child {
+.data-table tbody tr.tier-2-europe td:first-child {
   border-left: 5px solid #3498DB !important;
 }
 
-.data-table tbody tr.tier-3 td:first-child {
+.data-table tbody tr.tier-2-playoff td:first-child {
+  border-left: 5px solid #F5A623 !important;
+}
+
+.data-table tbody tr.tier-3-europe td:first-child {
   border-left: 5px solid #8fbedd !important
 }
 
@@ -453,8 +457,9 @@ body {
 }
 
 .legend-square.tier-1 { background-color: #2ECC71; }
-.legend-square.tier-2 { background-color: #3498DB; }
-.legend-square.tier-3 { background-color: #8fbedd; }
+.legend-square.tier-2-europe { background-color: #3498DB; }
+.legend-square.tier-2-playoff { background-color: #F5A623; }
+.legend-square.tier-3-europe { background-color: #8fbedd; }
 .legend-square.relegation { background-color: #E74C3C; }
 
 /*

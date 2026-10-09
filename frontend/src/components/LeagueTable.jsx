@@ -1,10 +1,15 @@
 import { useNavigate, useParams } from "react-router-dom";
 
 const qualificationMap = {
-  'England': [
+  'Premier League': [
     { cssClass: 'tier-1', label: 'Champions League', positions: [0, 1, 2, 3, 4] },
-    { cssClass: 'tier-2', label: 'Europa League', positions: [5, 6]},
-    { cssClass: 'tier-3', label: 'Conference League qualification', positions: [7]},
+    { cssClass: 'tier-2-europe', label: 'Europa League', positions: [5, 6]},
+    { cssClass: 'tier-3-europe', label: 'Conference League qualification', positions: [7]},
+    { cssClass: 'relegation', label: 'Relegation', isRelegation: true, count: 3 },
+  ],
+  'Championship': [
+    { cssClass: 'tier-1', label: 'Promotion', positions: [0, 1] },
+    { cssClass: 'tier-2-playoff', label: 'Promotion Qualification', positions: [2, 3, 4, 5] },
     { cssClass: 'relegation', label: 'Relegation', isRelegation: true, count: 3 },
   ],
   'Default': []
@@ -16,7 +21,7 @@ export default function LeagueTable({ tableData, currentLeague }) {
 
   if (!tableData || !currentLeague) return null;
 
-  const rules = qualificationMap[currentLeague.country] || qualificationMap['Default'];
+  const rules = qualificationMap[currentLeague.name] || qualificationMap['Default'];
 
   const getRowClass = (index, totalTeams) => {
     for (const rule of rules) {
