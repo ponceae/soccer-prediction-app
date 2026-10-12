@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import math
-from sqlmodel import and_, or_, Session, select, func
+from sqlmodel import col, and_, or_, Session, select, func
 
 from models import Match, TeamCompetition
 
@@ -335,13 +335,16 @@ class Analytics:
         self, 
         team_id: int
     ) -> tuple[int, int, int, int, int, int, int, int]:
-        """
-        Calculate the given team's wins, losses, draws, points, and goal difference
-        for the league table.
-
+        """ 
+        Calculate the regular season table stats for the given team.
+        
+        Dynamically calculates the number of regular season matches based on the total
+        number of teams in the competition in order to exclude any post season/playoff
+        matches from the table stats.
+        
         Args:
-            team_id (int): The id of the team to evaluate.
-
+            team_id (int): The team ID.
+            
         Returns:
             tuple[int, int, int, int, int, int, int, int]: The following table stats:
                 - Wins
@@ -352,11 +355,9 @@ class Analytics:
                 - Goals against
                 - Goal difference
                 - League points
-
-                For the current competition season.
         """
         team_count = self.session.exec(
-            select(func.coutn(TeamCompetition.team_id))
+            select(func.count(col(TeamCompetition.team_id)))
             .where(
                 TeamCompetition.competition_id == self.competition_id,
                 TeamCompetition.season_id == self.season_id,
@@ -364,10 +365,7 @@ class Analytics:
         ).one()
         
         max_regular_season_games = (team_count - 1) * 2
-        
-        
-        # wins, losses, draws, total_matches = self.team_outcomes(team_id)
-        
+                
         statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id,
@@ -383,45 +381,34 @@ class Analytics:
         
         wins, losses, draws = 0, 0, 0
         gf, ga = 0, 0
+        
         for match in team_matches:
             if match.home_team_id == team_id:
                 gf += match.ft_home_goals
                 ga += match.ft_away_goals
+                if match.ft_home_goals > match.ft_away_goals:
+                    wins += 1
+                elif match.ft_home_goals < match.ft_away_goals:
+                    losses += 1
+                else:
+                    draws += 1
+                
             elif match.away_team_id == team_id:
                 gf += match.ft_away_goals
                 ga += match.ft_home_goals
-        
+                if match.ft_away_goals > match.ft_home_goals:
+                    wins += 1
+                elif match.ft_away_goals < match.ft_home_goals:
+                    losses += 1
+                else:
+                    draws += 1
+            
+        total_matches = wins + losses + draws
         gd = gf - ga
         points = (wins * 3) + draws
         
         return wins, losses, draws, total_matches, gf, ga, gd, points
-    
-        # for match in team_matches:
-        #     if match.home_team_id == team_id:
-        #         gf += match.ft_home_goals
-        #         ga += match.ft_away_goals
-        #         if match.ft_home_goals > match.ft_away_goals:
-        #             wins += 1
-        #         elif match.ft_home_goals < match.ft_away_goals:
-        #             losses += 1
-        #         else:
-        #             draws += 1
-            
-        #     elif match.away_team_id == team_id:
-        #         gf += match.ft_away_goals
-        #         ga += match.ft_home_goals
-        #         if match.ft_away_goals > match.ft_home_goals:
-        #             wins += 1
-        #         elif match.ft_away_goals < match.ft_home_goals:
-        #             losses += 1
-        #         else:
-        #             draws += 1
         
-        # total_matches = wins + losses + draws
-        # gd = gf - ga
-        # points = (wins * 3) + draws
-        
-        # return wins, losses, draws, total_matches, gf, ga, gd, points
     
     def scoreline_chance(self, team_ids: HomeAwayID) -> tuple[int, int]:
         """

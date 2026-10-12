@@ -1,6 +1,6 @@
 from datetime import date, time
 from pydantic import BaseModel
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
 from typing import Optional
 
 # +==============+
@@ -70,6 +70,12 @@ class MatchBase(SQLModel):
     away_yellow_cards: int
     home_red_cards: int
     away_red_cards: int
+    
+    # knockout match stats (extra time & penalty shootout)
+    aet_home_goals: int | None = Field(default=None)
+    aet_away_goals: int | None = Field(default=None)
+    ps_home_goals: int | None = Field(default=None)
+    ps_away_goals: int | None = Field(default=None)
     
 class TeamCompetitionBase(SQLModel):
     team_id: int

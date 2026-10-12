@@ -30,6 +30,7 @@ class Match(MatchBase, table=True):
             'season_id',
             'home_team_id',
             'away_team_id',
+            'matchweek',
             name='unique_comp_season_matchup',
         ),
     )

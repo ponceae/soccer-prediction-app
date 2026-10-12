@@ -3,7 +3,7 @@ from collections import defaultdict
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import selectinload
-from sqlmodel import col, select, Session, SQLModel
+from sqlmodel import col, func, select, Session, SQLModel
 
 from analytics import Analytics, HomeAwayID
 from database import engine, get_session
@@ -170,20 +170,34 @@ def get_full_league_table(
 
     return sorted(table, key=lambda x: (x['points'], x['gd'], x['gf']), reverse=True)
 
-# @league_router.get('/knockouts', response_model=list[schemas.MatchWithTeams])
-# def get_league_knockouts(
-#     competition_id: int,
-#     season_id: int,
-#     session: Session = Depends(get_session)
-# ):
-#     statement = (
-#         select(models.Match)
-#         .where(
-#             models.Match.competition_id == competition_id,
-#             models.Match.season_id == season_id,
-#             models.Match.
-#         )
-#     )
+@league_router.get('/knockouts', response_model=list[schemas.MatchWithTeams])
+def get_league_knockouts(
+    competition_id: int,
+    season_id: int,
+    session: Session = Depends(get_session)
+):
+    team_count = session.exec(
+        select(func.count(col(models.TeamCompetition.team_id)))
+        .where(
+            models.TeamCompetition.competition_id == competition_id,
+            models.TeamCompetition.season_id == season_id,
+        )
+    ).one()
+    
+    max_regular_season_games = (team_count - 1) * 2
+    
+    statement = (
+        select(models.Match)
+        .where(
+            models.Match.competition_id == competition_id,
+            models.Match.season_id == season_id,
+            models.Match.matchweek > max_regular_season_games,
+        )
+        .options(
+            selectinload(models.Match.home_team), # type: ignore
+            selectinload(models.Match.away_team), # type: ignore
+        )
+    )
 
 # +============================+
 #     Matchup Specific Routes

@@ -226,6 +226,10 @@ def load_match_csv_to_table(
                     away_yellow_cards=int(row['AY']),
                     home_red_cards=int(row['HR']),
                     away_red_cards=int(row['AR']),
+                    aet_home_goals=int(row['AETHG']) if row.get('AETHG') else None,
+                    aet_away_goals=int(row['AETAG']) if row.get('AETAG') else None,
+                    ps_home_goals=int(row['PSHG']) if row.get('PSHG') else None,
+                    ps_away_goals=int(row['PSAG']) if row.get('PSAG') else None,
                 )
                 session.add(match)
     session.commit()          
@@ -404,7 +408,8 @@ def seed_database():
         
         match_csvs = [
             'data/epl_2526_season_matches.csv',
-            'data/championship_2526_season_matches.csv'
+            'data/championship_2526_season_matches.csv',
+            'data/championship_2526_playoff_matches.csv',
         ]
         
         for match_file in match_csvs:
