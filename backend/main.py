@@ -199,6 +199,8 @@ def get_league_knockouts(
         )
     )
 
+    return session.exec(statement).all()
+
 # +============================+
 #     Matchup Specific Routes
 # +============================+
@@ -230,11 +232,21 @@ def get_league_matchups(
     season_id: int,
     session: Session = Depends(get_session)
 ):
+    team_count = session.exec(
+        select(func.count(col(models.TeamCompetition.team_id)))
+        .where(
+            models.TeamCompetition.competition_id == competition_id,
+            models.TeamCompetition.season_id == season_id,
+        )
+    ).one()
+    max_regular_season_games = (team_count - 1) * 2
+    
     statement = (
         select(models.Match)
         .where(
             models.Match.competition_id == competition_id,
             models.Match.season_id == season_id,
+            models.Match.matchweek <= max_regular_season_games
         )
         .options(
             selectinload(models.Match.home_team), # type: ignore

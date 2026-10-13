@@ -51,11 +51,11 @@ export default function LeagueLayout({ currentLeague }) {
         <NavLink to="table" state={currentLeague} className="tab-link">
           Table
         </NavLink>
-        <NavLink to="knockout" state={currentLeague} className="tab-link">
-          Knockout
-        </NavLink>
         <NavLink to="matchups" state={currentLeague} className="tab-link">
           Matchups
+        </NavLink>
+        <NavLink to="knockout" state={currentLeague} className="tab-link">
+          Knockout
         </NavLink>
       </nav>
 

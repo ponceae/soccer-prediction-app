@@ -27,10 +27,13 @@ class Analytics:
                 - Home goal averages
                 - Away goal averages
         """
+        max_matchweek = self._max_regular_season_matchweek()
+
         statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id, 
                 Match.season_id == self.season_id,
+                Match.matchweek <= max_matchweek,
             )
         )
         competition_matches = self.session.exec(statement).all()
@@ -64,12 +67,15 @@ class Analytics:
             
                 For the current competition season.
         """
+        max_matchweek = self._max_regular_season_matchweek()
+
         league_h_goal_avg, league_a_goal_avg = self.league_goal_averages()
 
         h_match_statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id,
                 Match.season_id == self.season_id,
+                Match.matchweek <= max_matchweek,
                 Match.home_team_id == team_id
             )
         )
@@ -77,6 +83,7 @@ class Analytics:
             and_(
                 Match.competition_id == self.competition_id,
                 Match.season_id == self.season_id,
+                Match.matchweek <= max_matchweek,
                 Match.away_team_id == team_id
             )
         )
@@ -246,10 +253,13 @@ class Analytics:
         Returns:
             float: The competition season BTTS rate.
         """
+        max_matchweek = self._max_regular_season_matchweek()
+
         statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id,
                 Match.season_id == self.season_id,
+                Match.matchweek <= max_matchweek
             )
         )
         matches = self.session.exec(statement).all()
@@ -274,10 +284,13 @@ class Analytics:
         Returns:
             float: The rate of over 2.5 goals being scored.
         """
+        max_matchweek = self._max_regular_season_matchweek()
+
         statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id,
-                Match.season_id == self.season_id
+                Match.season_id == self.season_id,
+                Match.matchweek <= max_matchweek,
             )
         )
         matches = self.session.exec(statement).all()
@@ -305,10 +318,13 @@ class Analytics:
                 - Away games
                 - Total clean sheets
         """
+        max_matchweek = self._max_regular_season_matchweek()
+        
         statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id,
                 Match.season_id == self.season_id,
+                Match.matchweek <= max_matchweek,
                 or_(
                     Match.home_team_id == team_id,
                     Match.away_team_id == team_id,
@@ -356,15 +372,7 @@ class Analytics:
                 - Goal difference
                 - League points
         """
-        team_count = self.session.exec(
-            select(func.count(col(TeamCompetition.team_id)))
-            .where(
-                TeamCompetition.competition_id == self.competition_id,
-                TeamCompetition.season_id == self.season_id,
-            )
-        ).one()
-        
-        max_regular_season_games = (team_count - 1) * 2
+        max_regular_season_games = self._max_regular_season_matchweek()
                 
         statement = select(Match).where(
             and_(
@@ -461,10 +469,13 @@ class Analytics:
                 - Draws
                 - Total competition season matches played
         """
+        max_matchweek = self._max_regular_season_matchweek()
+
         statement = select(Match).where(
             and_(
                 Match.competition_id == self.competition_id,
                 Match.season_id == self.season_id,
+                Match.matchweek <= max_matchweek,
                 or_(
                     Match.home_team_id == team_id,
                     Match.away_team_id == team_id,
@@ -495,3 +506,18 @@ class Analytics:
                     draws += 1
                     
         return wins, losses, draws, total_matches
+
+    # +=========+
+    #   Utility
+    # +=========+
+
+    def _max_regular_season_matchweek(self) -> int:
+        team_count = self.session.exec(
+            select(func.count(col(TeamCompetition.team_id)))
+            .where(
+                TeamCompetition.competition_id == self.competition_id,
+                TeamCompetition.season_id == self.season_id,
+            )
+        ).one()
+
+        return (team_count - 1) * 2

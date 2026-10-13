@@ -810,3 +810,28 @@ body {
   transform: translateY(-3px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
+
+/*
++=================+
+  Knockout Bracket
++==================+
+*/
+
+.matchups-container.knockout {
+  height: auto;
+  overflow: visible;
+  background-color: transparent;
+}
+
+.score-wrapper.knockout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.score-subtext.knockout {
+  font-size: 0.8rem;
+  color: #E74C3C;
+  font-weight: bold;
+}

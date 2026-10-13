@@ -1,7 +1,7 @@
 import csv
 from database import engine
 from datetime import date, datetime, time
-from sqlmodel import and_, select, Session, SQLModel
+from sqlmodel import func, and_, select, Session, SQLModel
 from typing import TypeVar
 
 import models
@@ -168,6 +168,14 @@ def load_match_csv_to_table(
         tids = generate_tids(session)
         
         tally = {}
+
+        base_matchweek = session.exec(
+            select(func.max(models.Match.matchweek))
+            .where(
+                models.Match.competition_id == comp_id,
+                models.Match.season_id == _season_id,
+            )
+        ).one_or_none() or 0
         
         for row in reader:            
             home_team = TEAM_LU.get(row['HomeTeam'], row['HomeTeam'])
@@ -181,7 +189,7 @@ def load_match_csv_to_table(
             h_games_played = tally.get(home_team, 0)
             a_games_played = tally.get(away_team, 0)
 
-            curr_matchweek = max(h_games_played, a_games_played) + 1
+            curr_matchweek = base_matchweek + max(h_games_played, a_games_played) + 1
 
             tally[home_team] = h_games_played + 1
             tally[away_team] = a_games_played + 1
