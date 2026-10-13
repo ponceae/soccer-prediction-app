@@ -54,9 +54,12 @@ export default function LeagueLayout({ currentLeague }) {
         <NavLink to="matchups" state={currentLeague} className="tab-link">
           Matchups
         </NavLink>
-        <NavLink to="knockout" state={currentLeague} className="tab-link">
-          Knockout
-        </NavLink>
+
+        {activeSeason?.has_knockout && (
+          <NavLink to="knockout" state={currentLeague} className="tab-link">
+            Knockout
+          </NavLink>
+        )}
       </nav>
 
       <div className="league-content">

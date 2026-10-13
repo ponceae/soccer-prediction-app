@@ -122,6 +122,7 @@ def get_menu_data(session: Session = Depends(get_session)):
             'competition_id': comp.id,
             'season_id': season.id,
             'season_year': season.year,
+            'has_knockout': comp.knockout,
         })
     
     return menu 
