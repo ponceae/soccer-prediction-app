@@ -146,3 +146,10 @@ class TeamProfileResponse(BaseModel):
     outcomes: TeamOutcomes
     clean_sheets: CleanSheetResponse
     points_per_game: float
+
+class MatchupProfileResponse(BaseModel):
+    match: MatchWithTeams
+    predictions: PredictionResponse | None
+    h2h_matches: list[MatchWithTeams]
+    home_recent_form: list[MatchWithTeams]
+    away_recent_form: list[MatchWithTeams]
