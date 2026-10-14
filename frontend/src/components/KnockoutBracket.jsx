@@ -68,6 +68,7 @@ export default function KnockoutBracket() {
 
   let championTeam = null;
   let championId = null;
+  let finalEliminatedId = null;
 
   if (finalMatches.length > 0) {
     const fm = finalMatches[0];
@@ -81,6 +82,8 @@ export default function KnockoutBracket() {
 
     championTeam = homeWins ? fm.home_team?.name : fm.away_team?.name;
     championId = homeWins ? fm.home_team_id : fm.away_team_id;
+
+    finalEliminatedId = homeWins ? fm.away_team_id : fm.home_team_id;
   }
 
   const isDisqualified = (teamName) => {
@@ -91,27 +94,53 @@ export default function KnockoutBracket() {
     );
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
+  const getAggregateTieData = (legMatches) => {
+    if (!legMatches || legMatches.length === 0) return null;
 
-  const columns = [
-    { id: 'left', title: 'Semi-Final A', matches: tiesArray[0] || [], isFinal: false, connectorClass: 'left-connectors' },
-    { id: 'center', title: 'Final', matches: finalMatches, isFinal: true, connectorClass: null },
-    { id: 'right', title: 'Semi-Final B', matches: tiesArray[1] || [], isFinal: false, connectorClass: 'right-connectors' },
-  ];
+    const teamA = legMatches[0].home_team;
+    const teamB = legMatches[0].away_team;
+    const teamAId = legMatches[0].home_team_id;
+    const teamBId = legMatches[0].away_team_id;
+
+    let scoreA = 0;
+    let scoreB = 0;
+    let subText = null;
+
+    legMatches.forEach(m => {
+      const hasAET = m.aet_home_goals !== null && m.aet_away_goals !== null;
+      const hasPens = m.ps_home_goals !== null && m.ps_away_goals !== null;
+
+      if (m.home_team_id === teamAId) {
+        scoreA += m.ft_home_goals + (hasAET ? m.aet_home_goals : 0);
+        scoreB += m.ft_away_goals + (hasAET ? m.aet_away_goals : 0);
+      } else {
+        scoreB += m.ft_home_goals + (hasAET ? m.aet_home_goals : 0);
+        scoreA += m.ft_away_goals + (hasAET ? m.aet_away_goals : 0);
+      }
+
+      if (hasPens) {
+        subText = `(${m.ps_home_goals}-${m.ps_away_goals} pens)`;
+      } else if (hasAET && !subText) {
+        subText = '(AET)';
+      }
+    });
+
+    const eliminatedId = scoreA > scoreB ? teamBId : (scoreB > scoreA ? teamAId: null);
+
+    return {teamA, teamB, teamAId, teamBId, scoreA, scoreB, subText, eliminatedId};
+  }
+
+  const tieA = getAggregateTieData(tiesArray[0]);
+  const tieB = getAggregateTieData(tiesArray[1]);
+
+  const finalMatch = finalMatches[0] || null;
 
   return (
     <div className="league-summary-container">
       <h3 className="section-title">Playoffs & Knockout Stage</h3>
-
+    
       <div className="bracket-tree-wrapper">
-
+        
         {championTeam && (
           <div className="champion-section">
             <div className="trophy-icon">🏆</div>
@@ -131,81 +160,129 @@ export default function KnockoutBracket() {
         )}
 
         <div className="bracket-container">
-          {columns.map((col) => (
-            <div key={col.id} className={`bracket-column-group ${col.isFinal ? 'center-group' : ''}`}>
 
-              <div className={`bracket-column ${col.isFinal ? 'final-column' : ''}`}>
-                <h4 className="bracket-column-title">{col.title}</h4>
-                <div className={`bracket-node ${col.isFinal ? 'final-node' : ''}`}>
-                  
-                  {col.matches.map((match) => {
-                    const hasPens = match.ps_home_goals !== null && match.ps_away_goals !== null;
-                    const hasAET = match.aet_home_goals !== null && match.aet_away_goals !== null;
-
-                    let homeScore = match.ft_home_goals;
-                    let awayScore = match.ft_away_goals;
-                    let subText = '';
-
-                    if (hasPens) {
-                      homeScore = match.ft_home_goals + (hasAET ? match.aet_home_goals : 0);
-                      awayScore = match.ft_away_goals + (hasAET ? match.aet_away_goals : 0);
-                      subText = `(${match.ps_home_goals} - ${match.ps_away_goals} pens)`;
-                    } else if (hasAET) {
-                      homeScore = match.ft_home_goals + match.aet_home_goals;
-                      awayScore = match.ft_away_goals + match.aet_away_goals;
-                      subText = '(AET)';
-                    }
-
-                    const homeDQ = isDisqualified(match.home_team?.name);
-                    const awayDQ = isDisqualified(match.away_team?.name);
-
-                    return (
-                      <div key={match.id} className="bracket-match-row">
-                        <div className="bracket-match-date">
-                          {formatDate(match.date)}
-                        </div>
-                        <div className="match-scoreline knockout">
-                          <div className={`bracket-team bracket-team-home ${homeDQ ? 'disqualified' : ''}`}>
-                            <img
-                              src={`/logos/teams/${match.home_team_id}.svg`}
-                              className="bracket-badge"
-                              alt={match.home_team?.name}
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                            <span className="bracket-team-name">{match.home_team?.name}</span>
-                          </div>
-
-                          <div className="bracket-score-wrapper">
-                            <div className="bracket-score">{homeScore} - {awayScore}</div>
-                            {subText && <span className="bracket-score-subtext">{subText}</span>}
-                          </div>
-
-                          <div className={`bracket-team bracket-team-away ${awayDQ ? 'disqualified' : ''}`}>
-                            <span className="bracket-team-name">{match.away_team?.name}</span>
-                            <img
-                              src={`/logos/teams/${match.away_team_id}.svg`}
-                              className="bracket-badge"
-                              alt={match.away_team?.name}
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                </div>
-              </div>
-
-              {col.connectorClass && (
-                <div className={`bracket-connectors ${col.connectorClass}`}>
-                  <div className="connector-line top"></div>
-                  <div className="connector-line bottom"></div>
+          <div className="bracket-column-group">
+            <div className="bracket-column">
+              <h4 className="bracket-column-title">Semi-Final A</h4>
+              {tieA && (
+                <div className="bracket-node">
+                  <div className="match-scoreline knockout">
+                    <div className={`bracket-team bracket-team-home ${
+                      isDisqualified(tieA.teamA?.name) ? 'disqualified' : tieA.eliminatedId === tieA.teamAId ? 'eliminated': ''
+                    }`}>
+                      <img
+                        src={`/logos/teams/${tieA.teamAId}.svg`}
+                        className="bracket-badge"
+                        alt={tieA.teamA?.name}
+                        onError={(e) => {e.target.style.display = 'none'; }}
+                      />
+                      <span className="bracket-team-name">{tieA.teamA?.name}</span>
+                    </div>
+                    <div className="bracket-score-wrapper">
+                      <div className="bracket-score">{tieA.scoreA} - {tieA.scoreB}</div>
+                      {tieA.subText && <span className="bracket-score-subtext">{tieA.subText}</span>}
+                    </div>
+                    <div className={`bracket-team bracket-team-away ${
+                      isDisqualified(tieA.teamB?.name) ? 'disqualified' : tieA.eliminatedId === tieA.teamBId ? 'eliminated': ''
+                    }`}>
+                      <span className="bracket-team-name">{tieA.teamB?.name}</span>
+                        <img
+                        src={`/logos/teams/${tieA.teamBId}.svg`}
+                        className="bracket-badge"
+                        alt={tieA.teamB?.name}
+                        onError={(e) => {e.target.style.display = 'none'; }}
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
-
             </div>
-          ))}
+            <div className="bracket-connectors left-connectors">
+              <div className="connector-line center"></div>
+            </div>
+          </div>
+
+          <div className="bracket-column-group center-group">
+            <div className="bracket-column final-column">
+              <h4 className="bracket-column-title">Final</h4>
+              {finalMatch && (
+                <div className="bracket-node final-node">
+                  <div className="match-scoreline knockout">
+                    <div className={`bracket-team bracket-team-home ${
+                      isDisqualified(finalMatch.home_team?.name) ? 'disqualified' : finalEliminatedId === finalMatch.home_team_id ? 'eliminated': ''
+                    }`}>
+                      <img
+                        src={`/logos/teams/${finalMatch.home_team_id}.svg`}
+                        className="bracket-badge"
+                        alt={finalMatch.home_team?.name}
+                        onError={(e) => {e.target.style.display = 'none'; }}
+                      />
+                      <span className="bracket-team-name">{finalMatch.home_team?.name}</span>
+                    </div>
+                    <div className="bracket-score-wrapper">
+                      <div className="bracket-score">{finalMatch.ft_home_goals} - {finalMatch.ft_away_goals}</div>
+                      {finalMatch.ps_home_goals !== null && (
+                        <span className="bracket-score-subtext">({finalMatch.ps_home_goals}-{finalMatch.ps_away_goals} pens)</span>
+                      )}
+                    </div>
+                    <div className={`bracket-team bracket-team-away ${
+                      isDisqualified(finalMatch.away_team?.name) ? 'disqualified' : finalEliminatedId === finalMatch.away_team_id ? 'eliminated': ''
+                    }`}>
+                      <span className="bracket-team-name">{finalMatch.away_team?.name}</span>
+                      <img
+                        src={`/logos/teams/${finalMatch.away_team_id}.svg`}
+                        className="bracket-badge"
+                        alt={finalMatch.away_team?.name}
+                        onError={(e) => {e.target.style.display = 'none'; }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="bracket-column-group right-group">
+            <div className="bracket-connectors right-connectors">
+              <div className="connector-line center"></div>
+            </div>
+            <div className="bracket-column">
+              <h4 className="bracket-column-title">Semi-Final B</h4>
+              {tieB && (
+                <div className="bracket-node">
+                  <div className="match-scoreline knockout">
+                    <div className={`bracket-team bracket-team-home ${
+                      isDisqualified(tieB.teamA?.name) ? 'disqualified' : tieB.eliminatedId === tieB.teamAId ? 'eliminated': ''
+                    }`}>
+                      <img
+                        src={`/logos/teams/${tieB.teamAId}.svg`}
+                        className="bracket-badge"
+                        alt={tieB.teamA?.name}
+                        onError={(e) => {e.target.style.display = 'none'; }}
+                      />
+                      <span className="bracket-team-name">{tieB.teamA?.name}</span>
+                    </div>
+                    <div className="bracket-score-wrapper">
+                      <div className="bracket-score">{tieB.scoreA} - {tieB.scoreB}</div>
+                      {tieB.subText && <span className="bracket-score-subtext">{tieB.subText}</span>}
+                    </div>
+                    <div className={`bracket-team bracket-team-away ${
+                      isDisqualified(tieB.teamB?.name) ? 'disqualified' : tieB.eliminatedId === tieB.teamBId ? 'eliminated': ''
+                    }`}>
+                      <span className="bracket-team-name">{tieB.teamB?.name}</span>
+                      <img
+                        src={`/logos/teams/${tieB.teamBId}.svg`}
+                        className="bracket-badge"
+                        alt={tieB.teamB?.name}
+                        onError={(e) => {e.target.style.display = 'none'; }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
         </div>
 
       </div>

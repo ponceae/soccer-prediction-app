@@ -39,14 +39,50 @@ TEAM_LU = {
     'Oxford': 'Oxford United',
     'Leicester': 'Leicester City',
     'Sheffield Weds': 'Sheffield Wednesday',
+
+    # English League One
+    'Bolton': 'Bolton Wanderers',
+    'Bradford': 'Bradford City',
+    'Burton': 'Burton Albion',
+    'Cardiff': 'Cardiff City',
+    'Doncaster': 'Doncaster Rovers',
+    'Exeter': 'Exeter City',
+    'Huddersfield': 'Huddersfield Town',
+    'Lincoln': 'Lincoln City',
+    'Luton': 'Luton Town',
+    'Mansfield': 'Mansfield Town',
+    'Northampton': 'Northampton Town',
+    'Peterboro': 'Peterborough United',
+    'Plymouth': 'Plymouth Argyle',
+    'Rotherham': 'Rotherham United',
+    'Stockport': 'Stockport County',
+    'Wigan': 'Wigan Athletic',
+    'Wycombe': 'Wycombe Wanderers',
+
+    # English League Two
+    'Accrington': 'Accrington Stanley',
+    'Bristol Rvs': 'Bristol Rovers',
+    'Cambridge': 'Cambridge United',
+    'Cheltenham': 'Cheltenham Town',
+    'Colchester': 'Colchester United',
+    'Crewe': 'Crewe Alexandra',
+    'Grimsby': 'Grimsby Town',
+    'Harrogate': 'Harrogate Town',
+    'Oldham': 'Oldham Athletic',
+    'Salford': 'Salford City',
+    'Shrewsbury': 'Shrewsbury Town',
+    'Swindon': 'Swindon Town',
+    'Tranmere': 'Tranmere Rovers',
 }
 
 COMP_LU = {
     'epl': 'Premier League',
-    'championship': 'Championship'
+    'championship': 'Championship',
+    'eleague1': 'League One',
+    'eleague2': 'League Two',
 }
 
-PRIMARY_COMP = {'epl', 'championship'}
+PRIMARY_COMP = {'epl', 'championship', 'eleague1', 'eleague2'}
 
 F_SEASONS = {
     '2526': '2025-26',
@@ -54,7 +90,9 @@ F_SEASONS = {
 
 LEAGUE_COUNTRIES = {
     'epl': 'England',
-    'championship': 'England'
+    'championship': 'England',
+    'eleague1': 'England',
+    'eleague2': 'England',
 }
 
 # +=====================+
@@ -418,6 +456,10 @@ def seed_database():
             'data/epl_2526_season_matches.csv',
             'data/championship_2526_season_matches.csv',
             'data/championship_2526_playoff_matches.csv',
+            'data/eleague1_2526_season_matches.csv',
+            'data/eleague1_2526_playoff_matches.csv',
+            'data/eleague2_2526_season_matches.csv',
+            'data/eleague2_2526_playoff_matches.csv'
         ]
         
         for match_file in match_csvs:

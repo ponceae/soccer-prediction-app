@@ -2,4 +2,6 @@ name,type,country,code,knockout
 Premier League,Domestic League,England,E0,False
 FA Cup,Domestic Cup,England,EC0,True
 Carabao Cup,League Cup,England,EC1,True
-Championship,Domestic League,England,E2,True
+Championship,Domestic League,England,E1,True
+League One,Domestic League,England,E2,True
+League Two,Domestic League,England,E3,True

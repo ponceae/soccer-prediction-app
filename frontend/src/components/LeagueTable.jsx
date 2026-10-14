@@ -12,6 +12,16 @@ const qualificationMap = {
     { cssClass: 'tier-2-playoff', label: 'Promotion Qualification', positions: [2, 3, 4, 5] },
     { cssClass: 'relegation', label: 'Relegation', isRelegation: true, count: 3 },
   ],
+  'League One': [
+    { cssClass: 'tier-1', label: 'Promotion', positions: [0, 1] },
+    { cssClass: 'tier-2-playoff', label: 'Promotion Qualification', positions: [2, 3, 4, 5] },
+    { cssClass: 'relegation', label: 'Relegation', isRelegation: true, count: 4 },
+  ],
+  'League Two': [
+    { cssClass: 'tier-1', label: 'Promotion', positions: [0, 1, 2] },
+    { cssClass: 'tier-2-playoff', label: 'Promotion Qualification', positions: [3, 4, 5, 6] },
+    { cssClass: 'relegation', label: 'Relegation', isRelegation: true, count: 2 },
+  ],
   'Default': []
 }
 
