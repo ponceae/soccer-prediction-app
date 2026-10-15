@@ -7,6 +7,7 @@ from database import engine, get_session
 from services import globals
 from services.base import HomeAwayID
 from services.league import LeagueService
+from services.matchup import MatchupService
 from services.prediction import PredictionEngine
 from services.team import TeamService
 import models as models, schemas as schemas
@@ -74,6 +75,13 @@ def get_prediction_engine(
 ):
     return PredictionEngine(session, competition_id, season_id)
 
+def get_matchup_service(
+    competition_id: int,
+    season_id: int,
+    session: Session = Depends(get_session),
+):
+    return MatchupService(session, competition_id, season_id)
+
 def get_team_matchups(home_id: int, away_id: int) -> HomeAwayID:
     return HomeAwayID(home_team_id=home_id, away_team_id=away_id)
 
@@ -130,14 +138,22 @@ def get_league_knockouts(leagues: LeagueService = Depends(get_league_service)):
 #     Matchup Specific Routes
 # +============================+
 
-# @prediction_router.get('{match_id}/profile', response_model=schemas.)
-
 @prediction_router.get('/prediction', response_model=schemas.PredictionResponse)
 def get_matchup_prediction(
     predictions: PredictionEngine = Depends(get_prediction_engine), 
     teams: HomeAwayID = Depends(get_team_matchups),
 ):
     return predictions.generate_matchup_prediction(teams)
+
+@prediction_router.get('/{match_id}/profile', response_model=schemas.MatchupProfileResponse)
+def get_matchup_profile(
+    match_id: int,
+    matchup: MatchupService = Depends(get_matchup_service)
+):
+    profile = matchup.generate_matchup_profile(match_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail='Match not found')
+    return profile
 
 # +============================+
 #     Team Specific Routes
