@@ -1,5 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 
+import styles from './LeagueTable.module.css';
+
 const qualificationMap = {
   'Premier League': [
     { cssClass: 'tier-1', label: 'Champions League', positions: [0, 1, 2, 3, 4] },
@@ -46,9 +48,9 @@ export default function LeagueTable({ tableData, currentLeague }) {
   }
 
   return (
-    <div className="table-container">
+    <div className={styles['table-container']}>
 
-      <table className="data-table">
+      <table className={styles['data-table']}>
         <thead>
           <tr>
             <th>#</th>
@@ -68,7 +70,7 @@ export default function LeagueTable({ tableData, currentLeague }) {
             return (
               <tr 
                 key={team.team_id} 
-                className={rowClass}
+                className={rowClass ? styles[rowClass] : ''}
                 onClick={() => 
                   navigate(`/team/${compId}/${seasonId}/${team.team_id}`, {
                     state: { 
@@ -79,10 +81,10 @@ export default function LeagueTable({ tableData, currentLeague }) {
                 }
               >
                 <td>{index + 1}</td>
-                <td className="team-cell">
+                <td className={styles['team-cell']}>
                   <img
                     src={`/logos/teams/${team.team_id}.svg`}
-                    className="team-badge"
+                    className={styles['team-badge']}
                     alt={`${team.team_name} logo`}
                     onError={(e) => { e.target.style.display= 'none' }}
                   />
@@ -102,10 +104,10 @@ export default function LeagueTable({ tableData, currentLeague }) {
       </table>
 
       {rules.length > 0 && (
-        <div className="league-legend-container">
+        <div className={styles['league-legend-container']}>
         {rules.map((rule) => (
-          <div key={rule.cssClass} className="legend-item">
-            <span className={`legend-square ${rule.cssClass}`}></span>
+          <div key={rule.cssClass} className={styles['legend-item']}>
+            <span className={`${styles['legend-square']} ${styles[rule.cssClass]}`}></span>
             <span>{rule.label}</span>
           </div>
         ))}

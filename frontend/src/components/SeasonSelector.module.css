@@ -1,0 +1,15 @@
+.profile-season-wrapper {
+  margin-top: 15px;
+}
+
+.season-dropdown {
+  padding: 8px 12px;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  background-color: white;
+  font-size: 0.95rem;
+  color: #2C3E50;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}

@@ -1,6 +1,8 @@
 import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
 import SeasonSelector from './SeasonSelector';
 
+import styles from './LeagueLayout.module.css';
+
 export default function LeagueLayout({ currentLeague }) {
   const { compId, seasonId } = useParams();
   const navigate = useNavigate();
@@ -19,17 +21,17 @@ export default function LeagueLayout({ currentLeague }) {
         </button>
       </div>
 
-      <div className="league-header-container">
-        <div className="league-title-group">
+      <div className={styles['league-header-container']}>
+        <div className={styles['league-title-group']}>
           <img
             src={`/logos/competitions/${compId}.svg`}
-            className="competition-badge"
+            className={styles['competition-badge']}
             alt={`${currentLeague?.name} logo`}
             onError={(e) => { e.target.style.display= 'none' }}
           />
-          <div className="league-text">
+          <div className={styles['league-text']}>
             <h2>{currentLeague?.name} {displayYear}</h2>
-            <p className="country-subtitle">{currentLeague.country}</p>
+            <p className={styles['country-subtitle']}>{currentLeague.country}</p>
           </div>
         </div>
         
@@ -44,25 +46,49 @@ export default function LeagueLayout({ currentLeague }) {
         />
       </div>
 
-      <nav className="league-tabs">
-        <NavLink to="summary" state={currentLeague} className="tab-link">
+      <nav className={styles['league-tabs']}>
+        <NavLink 
+          to="summary" 
+          state={currentLeague} 
+          className={({ isActive }) =>
+            isActive ? `${styles['tab-link']} ${styles.active}` : styles['tab-link']
+          }
+        >
           Summary
         </NavLink>
-        <NavLink to="table" state={currentLeague} className="tab-link">
+        <NavLink 
+          to="table" 
+          state={currentLeague} 
+          className={({ isActive }) =>
+            isActive ? `${styles['tab-link']} ${styles.active}` : styles['tab-link']
+          }
+        >
           Table
         </NavLink>
-        <NavLink to="matchups" state={currentLeague} className="tab-link">
+        <NavLink 
+          to="matchups" 
+          state={currentLeague} 
+          className={({ isActive }) =>
+            isActive ? `${styles['tab-link']} ${styles.active}` : styles['tab-link']
+          }
+        >
           Matchups
         </NavLink>
 
         {activeSeason?.has_knockout && (
-          <NavLink to="knockout" state={currentLeague} className="tab-link">
+          <NavLink 
+            to="knockout" 
+            state={currentLeague} 
+            className={({ isActive }) =>
+              isActive ? `${styles['tab-link']} ${styles.active}` : styles['tab-link']
+          }
+          >
             Knockout
           </NavLink>
         )}
       </nav>
 
-      <div className="league-content">
+      <div className={styles['league-content']}>
         <Outlet/>
       </div>
     </div>

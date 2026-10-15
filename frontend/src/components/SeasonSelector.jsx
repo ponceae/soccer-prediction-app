@@ -1,8 +1,10 @@
+import styles from './SeasonSelector.module.css';
+
 export default function SeasonSelector({ seasons, currSeasonId, onSeasonChange }) {
   return (
-    <div className="profile-season-wrapper">
+    <div className={styles['profile-season-wrapper']}>
       <select
-        className="season-dropdown"
+        className={styles['season-dropdown']}
         value={currSeasonId}
         onChange={(e) => onSeasonChange(e.target.value)}
       >

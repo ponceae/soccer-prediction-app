@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import styles from './Sidebar.module.css';
+
 const countryFlags = {
   'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
   'Spain': '🇪🇸',
@@ -11,7 +13,7 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
   
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
-  const sidebarClass = isOpen ? 'sidebar open' : 'sidebar';
+  const sidebarClass = isOpen ? `${styles.sidebar} ${styles.open}` : styles.sidebar;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -31,7 +33,7 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
   if (!menuData) {
     return (
       <aside className={sidebarClass}>
-        <div className="sidebar-header">
+        <div className={styles['sidebar-header']}>
           <p>Loading menu...</p>
         </div>
       </aside>
@@ -45,7 +47,7 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
   return (
     <aside className={sidebarClass} ref={sidebarRef}>
       <div 
-        className="sidebar-home"
+        className={styles['sidebar-home']}
         onClick={() => {
           navigate('/');
           closeSidebar();
@@ -54,27 +56,26 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
         Home
       </div>
 
-      <ul className="country-list">
+      <ul className={styles['country-list']}>
         {Object.entries(menuData).map(([country, leagues]) => {
           const isExpanded = expandedCountry === country;
 
           return (
-            <li key={country} className="country-item">
+            <li key={country} className={styles['country-item']}>
               <div 
-                className={`country-header ${isExpanded ? 'active' : ''}`}
+                className={`${styles['country-header']} ${isExpanded ? styles.active : ''}`}
                 onClick={() => toggleCountry(country)}
               >
                 {countryFlags[country] || '🌎'} {country} 
-                <span className="arrow">▼</span>
+                <span className={styles['arrow']}>▼</span>
               </div>
-              <ul className={`league-list ${isExpanded ? 'show' : ''}`}>
+              <ul className={`${styles['league-list']} ${isExpanded ? styles.show : ''}`}>
                 {Object.entries(leagues).map(([leagueName, seasons]) => {
                   const latestSeason = seasons[0];
 
                   return (
                     <li
                       key={leagueName}
-                      className="league-item"
                       onClick={() => onLeagueClick(
                         latestSeason.competition_id,
                         latestSeason.season_id,
@@ -83,7 +84,7 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
                         seasons,
                       )}
                     >
-                      <span className="league-item-text">{leagueName}</span>
+                      <span className={styles['league-item-text']}>{leagueName}</span>
                     </li>
                   );
                 })}

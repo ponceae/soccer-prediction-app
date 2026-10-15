@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
+import styles from './Matchups.module.css';
+
 export default function Matchups() {
   const { compId, seasonId } = useParams();
   const [matchups, setMatchups] = useState([]);
@@ -70,23 +72,23 @@ export default function Matchups() {
   return (
     <div 
     id="matchup-container"
-    className="matchups-container"
+    className={styles['matchups-container']}
     >
     
-      <div className="matchweek-jumper">
+      <div className={styles['matchweek-jumper']}>
         <button
-          className="grid-toggle-btn"
+          className={styles['grid-toggle-btn']}
           onClick={() => setIsGridOpen(!isGridOpen)}
         >
           Jump to Matchweek {isGridOpen ? '▲' : '▼'}
         </button>
 
         {isGridOpen && (
-          <div className="week-grid">
+          <div className={styles['week-grid']}>
             {sortedMatchweeks.map((week) => (
               <button
                 key={`grid-${week}`}
-                className="grid-square-btn"
+                className={styles['grid-square-btn']}
                 onClick={() => scrollToWeek(week)}
               >
                 {week}
@@ -96,18 +98,18 @@ export default function Matchups() {
         )}
       </div>
 
-      <div className="matchups-scroll-area">
+      <div className={styles['matchups-scroll-area']}>
         {sortedMatchweeks.map((week) => (
-          <div key={week} id={`matchweek-${week}`} className="matchweek-group">
+          <div key={week} id={`matchweek-${week}`} className={styles['matchweek-group']}>
 
-            <div className="matchweek-header">
+            <div className={styles['matchweek-header']}>
               <h3>Matchweek {week}</h3>
             </div>
 
-            <div className="matchweek-games">
+            <div className={styles['matchweek-games']}>
               {groupedMatchups[week].map((match) => (
-                <div key={match.id} className="match-row">
-                  <div className="match-date">
+                <div key={match.id} className={styles['match-row']}>
+                  <div className={styles['match-date']}>
                     {new Date(match.date).toLocaleDateString('en-US', {
                       month: 'short', day: 'numeric', year: 'numeric'
                     })}
@@ -115,26 +117,26 @@ export default function Matchups() {
 
                   <div className="match-scoreline">
                     
-                    <div className="team-home">
+                    <div className={styles['team-home']}>
                       <span>{match.home_team.name}</span>
                       <img
                         src={`/logos/teams/${match.home_team.id}.svg`}
                         alt="badge"
-                        className="score-badge"
+                        className={styles['score-badge']}
                         onError={(e) => { e.target.style.display = 'none'; }}
                       />
                     </div>
 
-                    <span className="score">
+                    <span className={styles['score']}>
                       {match.ft_home_goals} - {match.ft_away_goals}
                     </span>
 
-                    <div className="team-away">
+                    <div className={styles['team-away']}>
                       <span>{match.away_team.name}</span>
                       <img
                         src={`/logos/teams/${match.away_team.id}.svg`}
                         alt="badge"
-                        className="score-badge"
+                        className={styles['score-badge']}
                         onError={(e) => { e.target.style.display = 'none'; }}
                       />
                     </div>

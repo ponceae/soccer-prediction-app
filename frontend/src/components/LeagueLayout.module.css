@@ -1,0 +1,71 @@
+/*
++==========================+
+  League Header & Dropdown
++==========================+
+*/
+
+.league-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #E2E8F0;
+  margin-bottom: 20px;
+}
+
+.league-title-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.league-tabs{
+  display: flex;
+  gap: 24px;
+  padding: 0 20px;
+  background-color: #FFF;
+  border-bottom: 1px solid #DDD;
+}
+
+.league-content {
+  padding: 20px 0;
+}
+
+.tab-link {
+  text-decoration: none;
+  color: #666;
+  font-weight: 500;
+  padding: 12px 0;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tab-link:hover {
+  color:#111;
+  border-bottom: 3px solid #2C3E50;
+}
+
+.tab-link.active{
+  color: #111;
+  border-bottom: 3px solid #2C3E50;
+}
+
+.competition-badge {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+}
+
+.league-text h2 {
+  font-size: 1.6rem;
+  color: #2C3E50;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.country-subtitle {
+  font-size: 0.95rem;
+  color: #7F8C8D;
+  margin-top: 2px;
+}

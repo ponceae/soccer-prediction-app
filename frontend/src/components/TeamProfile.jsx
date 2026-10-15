@@ -4,6 +4,8 @@ import SeasonSelector from "./SeasonSelector";
 import Outcomes from "./Outcomes";
 import Strengths from "./Strengths";
 
+import styles from './TeamProfile.module.css';
+
 export default function TeamProfile() {
   const [teamData, setTeamData] = useState(null);
   const [loading, setLoading]= useState(true);
@@ -37,13 +39,13 @@ export default function TeamProfile() {
   }, [teamId, compId, seasonId]);
 
   if (loading) return (
-    <div className="team-profile-container">
+    <div className={styles['team-profile-container']}>
       <h2>Loading {teamName} profile...</h2>
     </div>
   );
 
   if (error) return (
-    <div className="team-profile-container">
+    <div className={`${styles['team-profile-contianer']} ${styles['error-state']}`}>
       <p>{error}</p>
       <button className="back-btn" onClick={() => navigate(-1)}>Go Back</button>
     </div>
@@ -64,7 +66,7 @@ export default function TeamProfile() {
   ]
 
   return (
-    <div className="team-profile-container">
+    <div className={styles['team-profile-container']}>
 
       <div className="table-navigation">
         <button className="back-btn" onClick={() => navigate(
@@ -75,18 +77,18 @@ export default function TeamProfile() {
         </button>
       </div>
 
-      <div className="profile-hero">
+      <div className={styles['profile-hero']}>
         <img
           src={`/logos/teams/${teamId}.svg`}
-          className="profile-badge"
+          className={styles['profile-badge']}
           alt={`${teamName} logo`}
           onError={(e) => e.target.style.display = 'none'}
         />
-        <h2 className="profile-team-name">{teamName}</h2>
-        <p className="profile-ppg">
+        <h2 className={styles['profile-team-name']}>{teamName}</h2>
+        <p className={styles['profile-ppg']}>
           Season PPG: {teamData.points_per_game.toFixed(2)}
         </p>
-        <p className="profile-clean-sheets">
+        <p className={styles['profile-clean-sheets']}>
           Season Clean Sheets: {teamData.clean_sheets.total_clean_sheets}
         </p>
 
@@ -100,7 +102,7 @@ export default function TeamProfile() {
         />
       </div>
 
-      <div className="graphs-container">
+      <div className={styles['graphs-container']}>
         <Outcomes outcomeData={outcomeData}/>
         <Strengths radarData={radarData} teamName={teamName}/>
       </div>

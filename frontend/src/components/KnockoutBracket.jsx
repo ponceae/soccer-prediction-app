@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 
+import styles from './KnockoutBracket.module.css';
+
 export default function KnockoutBracket() {
   const { compId, seasonId } = useParams();
 
@@ -139,56 +141,56 @@ export default function KnockoutBracket() {
     <div className="league-summary-container">
       <h3 className="section-title">Playoffs & Knockout Stage</h3>
     
-      <div className="bracket-tree-wrapper">
+      <div className={styles['bracket-tree-wrapper']}>
         
         {championTeam && (
-          <div className="champion-section">
-            <div className="trophy-icon">🏆</div>
-            <div className="champion-badge-container">
+          <div className={styles['champion-section']}>
+            <div className={styles['trophy-icon']}>🏆</div>
+            <div className={styles['champion-badge-container']}>
               <img
                 src={`/logos/teams/${championId}.svg`}
-                className="champion-badge"
+                className={styles['champion-badge']}
                 alt={`${championTeam} Champions`}
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             </div>
-            <div className="champion-text">
-              <span className="champion-year">{displayYear} CHAMPIONS</span>
-              <span className="champion-name">{championTeam}</span>
+            <div className={styles['champion-text']}>
+              <span className={styles['champion-year']}>{displayYear} CHAMPIONS</span>
+              <span className={styles['champion-name']}>{championTeam}</span>
             </div>
           </div>
         )}
 
-        <div className="bracket-container">
+        <div className={styles['bracket-container']}>
 
-          <div className="bracket-column-group">
-            <div className="bracket-column">
-              <h4 className="bracket-column-title">Semi-Final A</h4>
+          <div className={styles['bracket-column-group']}>
+            <div className={styles['bracket-column']}>
+              <h4 className={styles['bracket-column-title']}>Semi-Final A</h4>
               {tieA && (
-                <div className="bracket-node">
+                <div className={styles['bracket-node']}>
                   <div className="match-scoreline knockout">
-                    <div className={`bracket-team bracket-team-home ${
-                      isDisqualified(tieA.teamA?.name) ? 'disqualified' : tieA.eliminatedId === tieA.teamAId ? 'eliminated': ''
+                    <div className={`${styles['bracket-team']} ${styles['bracket-team-home']} ${
+                      isDisqualified(tieA.teamA?.name) ? styles.disqualified : tieA.eliminatedId === tieA.teamAId ? styles.eliminated: ''
                     }`}>
                       <img
                         src={`/logos/teams/${tieA.teamAId}.svg`}
-                        className="bracket-badge"
+                        className={styles['bracket-badge']}
                         alt={tieA.teamA?.name}
                         onError={(e) => {e.target.style.display = 'none'; }}
                       />
-                      <span className="bracket-team-name">{tieA.teamA?.name}</span>
+                      <span className={styles['bracket-team-name']}>{tieA.teamA?.name}</span>
                     </div>
-                    <div className="bracket-score-wrapper">
-                      <div className="bracket-score">{tieA.scoreA} - {tieA.scoreB}</div>
-                      {tieA.subText && <span className="bracket-score-subtext">{tieA.subText}</span>}
+                    <div className={styles['bracket-score-wrapper']}>
+                      <div className={styles['bracket-score']}>{tieA.scoreA} - {tieA.scoreB}</div>
+                      {tieA.subText && <span className={styles['bracket-score-subtext']}>{tieA.subText}</span>}
                     </div>
-                    <div className={`bracket-team bracket-team-away ${
-                      isDisqualified(tieA.teamB?.name) ? 'disqualified' : tieA.eliminatedId === tieA.teamBId ? 'eliminated': ''
+                    <div className={`${styles['bracket-team']} ${styles['bracket-team-away']} ${
+                      isDisqualified(tieA.teamB?.name) ? styles.disqualified : tieA.eliminatedId === tieA.teamBId ? styles.eliminated: ''
                     }`}>
-                      <span className="bracket-team-name">{tieA.teamB?.name}</span>
+                      <span className={styles['bracket-team-name']}>{tieA.teamB?.name}</span>
                         <img
                         src={`/logos/teams/${tieA.teamBId}.svg`}
-                        className="bracket-badge"
+                        className={styles['bracket-badge']}
                         alt={tieA.teamB?.name}
                         onError={(e) => {e.target.style.display = 'none'; }}
                       />
@@ -197,41 +199,41 @@ export default function KnockoutBracket() {
                 </div>
               )}
             </div>
-            <div className="bracket-connectors left-connectors">
-              <div className="connector-line center"></div>
+            <div className={styles['bracket-connectors']}>
+              <div className={`${styles['connector-line']} ${styles.center}`}></div>
             </div>
           </div>
 
-          <div className="bracket-column-group center-group">
-            <div className="bracket-column final-column">
-              <h4 className="bracket-column-title">Final</h4>
+          <div className={styles['bracket-column-group']}>
+            <div className={styles['bracket-column']}>
+              <h4 className={styles['bracket-column-title']}>Final</h4>
               {finalMatch && (
-                <div className="bracket-node final-node">
+                <div className={styles['bracket-node']}>
                   <div className="match-scoreline knockout">
-                    <div className={`bracket-team bracket-team-home ${
-                      isDisqualified(finalMatch.home_team?.name) ? 'disqualified' : finalEliminatedId === finalMatch.home_team_id ? 'eliminated': ''
+                    <div className={`${styles['bracket-team']} ${styles['bracket-team-home']} ${
+                      isDisqualified(finalMatch.home_team?.name) ? styles.disqualified : finalEliminatedId === finalMatch.home_team_id ? styles.eliminated: ''
                     }`}>
                       <img
                         src={`/logos/teams/${finalMatch.home_team_id}.svg`}
-                        className="bracket-badge"
+                        className={styles['bracket-badge']}
                         alt={finalMatch.home_team?.name}
                         onError={(e) => {e.target.style.display = 'none'; }}
                       />
-                      <span className="bracket-team-name">{finalMatch.home_team?.name}</span>
+                      <span className={styles['bracket-team-name']}>{finalMatch.home_team?.name}</span>
                     </div>
-                    <div className="bracket-score-wrapper">
-                      <div className="bracket-score">{finalMatch.ft_home_goals} - {finalMatch.ft_away_goals}</div>
+                    <div className={styles['bracket-score-wrapper']}>
+                      <div className={styles['bracket-score']}>{finalMatch.ft_home_goals} - {finalMatch.ft_away_goals}</div>
                       {finalMatch.ps_home_goals !== null && (
-                        <span className="bracket-score-subtext">({finalMatch.ps_home_goals}-{finalMatch.ps_away_goals} pens)</span>
+                        <span className={styles['bracket-score-subtext']}>({finalMatch.ps_home_goals}-{finalMatch.ps_away_goals} pens)</span>
                       )}
                     </div>
-                    <div className={`bracket-team bracket-team-away ${
-                      isDisqualified(finalMatch.away_team?.name) ? 'disqualified' : finalEliminatedId === finalMatch.away_team_id ? 'eliminated': ''
+                    <div className={`${styles['bracket-team']} ${styles['bracket-team-away']} ${
+                      isDisqualified(finalMatch.away_team?.name) ? styles.disqualified : finalEliminatedId === finalMatch.away_team_id ? styles.eliminated: ''
                     }`}>
-                      <span className="bracket-team-name">{finalMatch.away_team?.name}</span>
+                      <span className={styles['bracket-team-name']}>{finalMatch.away_team?.name}</span>
                       <img
                         src={`/logos/teams/${finalMatch.away_team_id}.svg`}
-                        className="bracket-badge"
+                        className={styles['bracket-badge']}
                         alt={finalMatch.away_team?.name}
                         onError={(e) => {e.target.style.display = 'none'; }}
                       />
@@ -242,37 +244,37 @@ export default function KnockoutBracket() {
             </div>
           </div>
 
-          <div className="bracket-column-group right-group">
-            <div className="bracket-connectors right-connectors">
-              <div className="connector-line center"></div>
+          <div className={styles['bracket-column-group']}>
+            <div className={styles['bracket-connectors']}>
+              <div className={`${styles['connector-line']} ${styles.center}`}></div>
             </div>
-            <div className="bracket-column">
-              <h4 className="bracket-column-title">Semi-Final B</h4>
+            <div className={styles['bracket-column']}>
+              <h4 className={styles['bracket-column-title']}>Semi-Final B</h4>
               {tieB && (
-                <div className="bracket-node">
+                <div className={styles['bracket-node']}>
                   <div className="match-scoreline knockout">
-                    <div className={`bracket-team bracket-team-home ${
-                      isDisqualified(tieB.teamA?.name) ? 'disqualified' : tieB.eliminatedId === tieB.teamAId ? 'eliminated': ''
+                    <div className={`${styles['bracket-team']} ${styles['bracket-team-home']} ${
+                      isDisqualified(tieB.teamA?.name) ? styles.disqualified : tieB.eliminatedId === tieB.teamAId ? styles.eliminated: ''
                     }`}>
                       <img
                         src={`/logos/teams/${tieB.teamAId}.svg`}
-                        className="bracket-badge"
+                        className={styles['bracket-badge']}
                         alt={tieB.teamA?.name}
                         onError={(e) => {e.target.style.display = 'none'; }}
                       />
-                      <span className="bracket-team-name">{tieB.teamA?.name}</span>
+                      <span className={styles['bracket-team-name']}>{tieB.teamA?.name}</span>
                     </div>
-                    <div className="bracket-score-wrapper">
-                      <div className="bracket-score">{tieB.scoreA} - {tieB.scoreB}</div>
-                      {tieB.subText && <span className="bracket-score-subtext">{tieB.subText}</span>}
+                    <div className={styles['bracket-score-wrapper']}>
+                      <div className={styles['bracket-score']}>{tieB.scoreA} - {tieB.scoreB}</div>
+                      {tieB.subText && <span className={styles['bracket-score-subtext']}>{tieB.subText}</span>}
                     </div>
-                    <div className={`bracket-team bracket-team-away ${
-                      isDisqualified(tieB.teamB?.name) ? 'disqualified' : tieB.eliminatedId === tieB.teamBId ? 'eliminated': ''
+                    <div className={`${styles['bracket-team']} ${styles['bracket-team-away']} ${
+                      isDisqualified(tieB.teamB?.name) ? styles.disqualified : tieB.eliminatedId === tieB.teamBId ? styles.eliminated: ''
                     }`}>
-                      <span className="bracket-team-name">{tieB.teamB?.name}</span>
+                      <span className={styles['bracket-team-name']}>{tieB.teamB?.name}</span>
                       <img
                         src={`/logos/teams/${tieB.teamBId}.svg`}
-                        className="bracket-badge"
+                        className={styles['bracket-badge']}
                         alt={tieB.teamB?.name}
                         onError={(e) => {e.target.style.display = 'none'; }}
                       />

@@ -1,0 +1,49 @@
+/*
++======================+
+  Buttons & Containers
++======================+
+*/
+
+.team-profile-container {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.team-profile-container.error-state p {
+  color: red;
+}
+
+/*
++=======================+
+  Team Profile & Charts
++=======================+
+*/
+
+.profile-hero {
+  margin-bottom: 40px;
+}
+
+.profile-badge {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.profile-team-name {
+  font-size: 2rem;
+  margin-top: 10px;
+}
+
+.profile-ppg,
+.profile-clean-sheets {
+  font-size: 1.2rem;
+  color: #7F8C8D;
+  font-weight: bold;
+}
+
+.graphs-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}

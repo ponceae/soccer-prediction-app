@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import DonutChart from "./DonutChart";
 
+import styles from './LeagueSummary.module.css';
+
 export default function LeagueSummary() {
   const { compId, seasonId } = useParams();
 
@@ -58,33 +60,33 @@ export default function LeagueSummary() {
         Season Averages
       </h3>
 
-      <div className="stats-grid">
+      <div className={styles['stats-grid']}>
 
-        <div className="stat-card">
-          <span className="stat-label">Avg Goals / Match</span>
-          <span className="stat-value">{totalAvg}</span>
+        <div className={styles['stat-card']}>
+          <span className={styles['stat-label']}>Avg Goals / Match</span>
+          <span className={styles['stat-value']}>{totalAvg}</span>
         </div>
       
-        <div className="stat-card">
-          <span className="stat-label">Home vs. Away Avg</span>
-          <span className="stat-value">
+        <div className={styles['stat-card']}>
+          <span className={styles['stat-label']}>Home vs. Away Avg</span>
+          <span className={styles['stat-value']}>
             {home_league_goal_avg.toFixed(2)} - {away_league_goal_avg.toFixed(2)}
           </span>
         </div>
 
-        <div className="stat-card">
-          <span className="stat-label">BTTS Rate</span>
-          <span className="stat-value">{formatRate(btts_rate)}</span>
+        <div className={styles['stat-card']}>
+          <span className={styles['stat-label']}>BTTS Rate</span>
+          <span className={styles['stat-value']}>{formatRate(btts_rate)}</span>
         </div>
 
-        <div className="stat-card">
-          <span className="stat-label">Over 2.5 Rate</span>
-          <span className="stat-value">{formatRate(over_rate)}</span>
+        <div className={styles['stat-card']}>
+          <span className={styles['stat-label']}>Over 2.5 Rate</span>
+          <span className={styles['stat-value']}>{formatRate(over_rate)}</span>
         </div>
       </div>
 
       <h3 className="section-title">Outcome Probabilities</h3>
-      <div className="charts-container">
+      <div className={styles['charts-container']}>
         <DonutChart title="Both Teams to Score" data={bttsData}/>
         <DonutChart title="Over/Under 2.5 Goals" data={overData}/>
       </div>
