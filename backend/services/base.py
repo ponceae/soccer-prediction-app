@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from sqlmodel import and_, col, func, select, Session
 
-from models import Match, TeamCompetition
+from models import Match, TeamCompetition, Season
 
 @dataclass
 class HomeAwayID:
@@ -14,21 +14,24 @@ class BaseService:
     competition_id: int
     season_id: int
     
-    def league_goal_averages(self):
+    def league_goal_averages(self, up_to_mw: int | None = None):
         max_matchweek = self.max_regular_season_matchweek()
 
-        statement = select(Match).where(
-            and_(
-                Match.competition_id == self.competition_id, 
-                Match.season_id == self.season_id,
-                Match.matchweek <= max_matchweek,
-            )
-        )
+        conditions = [
+            Match.competition_id == self.competition_id,
+            Match.season_id == self.season_id,
+            Match.matchweek <= max_matchweek,
+        ]
+        
+        if up_to_mw is not None:
+            conditions.append(Match.matchweek < up_to_mw)
+
+        statement = select(Match).where(and_(*conditions))
         competition_matches = self.session.exec(statement).all()
         total_matches = len(competition_matches)
         
         if not total_matches:
-            return 0.0, 0.0
+            return 1.15, 1.15
         
         h_goals = sum(m.ft_home_goals for m in competition_matches)
         a_goals = sum(m.ft_away_goals for m in competition_matches)
@@ -48,3 +51,18 @@ class BaseService:
         ).one()
 
         return (team_count - 1) * 2
+    
+    def get_previous_season_id(self):
+        curr_season = self.session.get(Season, self.season_id)
+        
+        if not curr_season:
+            return None
+        
+        statement = (
+            select(Season.id)
+            .where(Season.year < curr_season.year)
+            .order_by(col(Season.year).desc())
+            .limit(1)
+        )
+        
+        return self.session.exec(statement).first()

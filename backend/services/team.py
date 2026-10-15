@@ -1,29 +1,32 @@
-from sqlmodel import and_, or_, select
+from sqlmodel import and_, col, or_, select
 
-from models import Match
+from models import Match, TeamCompetition
 from services.base import BaseService
 
 class TeamService(BaseService):
-    def team_outcomes(self, team_id: int):
+    def team_outcomes(self, team_id: int, up_to_mw: int | None = None):
         max_matchweek = self.max_regular_season_matchweek()
 
-        statement = select(Match).where(
-            and_(
-                Match.competition_id == self.competition_id,
-                Match.season_id == self.season_id,
-                Match.matchweek <= max_matchweek,
-                or_(
-                    Match.home_team_id == team_id,
-                    Match.away_team_id == team_id,
-                ),
-            )
-        )
+        conditions = [
+            Match.competition_id == self.competition_id,
+            Match.season_id == self.season_id,
+            Match.matchweek <= max_matchweek,
+            or_(
+                Match.home_team_id == team_id,
+                Match.away_team_id == team_id,
+            ),
+        ]
+        if up_to_mw is not None:
+            conditions.append(Match.matchweek < up_to_mw)
+
+        statement = select(Match).where(and_(*conditions))
         team_matches = self.session.exec(statement).all()
         total_matches = len(team_matches)
-        wins, draws, losses = 0, 0, 0
-        
+                
         if not total_matches:
             return 0, 0, 0, 0
+        
+        wins, draws, losses = 0, 0, 0
         
         for match in team_matches:
             if match.home_team_id == team_id:
@@ -91,55 +94,65 @@ class TeamService(BaseService):
             
         return h_cs_counter, a_cs_counter, (h_cs_counter + a_cs_counter)
     
-    def team_strengths(self, team_id: int):
+    def team_strengths(self, team_id: int, up_to_mw: int | None = None):
         max_matchweek = self.max_regular_season_matchweek()
 
-        league_h_goal_avg, league_a_goal_avg = self.league_goal_averages()
+        league_h_goal_avg, league_a_goal_avg = self.league_goal_averages(up_to_mw=up_to_mw)
 
-        h_match_statement = select(Match).where(
-            and_(
-                Match.competition_id == self.competition_id,
-                Match.season_id == self.season_id,
-                Match.matchweek <= max_matchweek,
-                Match.home_team_id == team_id
-            )
-        )
-        a_match_statement = select(Match).where(
-            and_(
-                Match.competition_id == self.competition_id,
-                Match.season_id == self.season_id,
-                Match.matchweek <= max_matchweek,
-                Match.away_team_id == team_id
-            )
-        )
+        base_h_conditions = [
+            Match.competition_id == self.competition_id,
+            Match.season_id == self.season_id,
+            Match.matchweek <= max_matchweek,
+            Match.home_team_id == team_id,
+        ]
+        base_a_conditions = [
+            Match.competition_id == self.competition_id,
+            Match.season_id == self.season_id,
+            Match.matchweek <= max_matchweek,
+            Match.away_team_id == team_id,
+        ]
         
-        h_matches = self.session.exec(h_match_statement).all()
-        a_matches = self.session.exec(a_match_statement).all()
+        if up_to_mw is not None:
+            base_h_conditions.append(Match.matchweek < up_to_mw)
+            base_a_conditions.append(Match.matchweek < up_to_mw)
+        
+        h_matches = self.session.exec(select(Match).where(
+            and_(*base_h_conditions)
+        )).all()
+        a_matches = self.session.exec(select(Match).where(
+            and_(*base_a_conditions)
+        )).all()
         
         total_h_matches = len(h_matches)
         total_a_matches = len(a_matches)
+        
+        if total_h_matches == 0:
+            raw_h_atk, raw_h_def = 1.0, 1.0
+        else:
+            avg_h_goals = sum(m.ft_home_goals for m in h_matches) / total_h_matches
+            avg_h_goals_conceeded = sum(m.ft_away_goals for m in h_matches) / total_h_matches
+            raw_h_atk = (avg_h_goals / league_h_goal_avg) if league_h_goal_avg else 1.0
+            raw_h_def = (avg_h_goals_conceeded / league_a_goal_avg) if league_a_goal_avg else 1.0
 
-        if not total_h_matches and not total_a_matches:
-            return 0.0, 0.0, 0.0, 0.0
-
-        h_goals = sum(m.ft_home_goals for m in h_matches)
-        a_goals = sum(m.ft_away_goals for m in a_matches)
+        if total_a_matches == 0:
+            raw_a_atk, raw_a_def = 1.0, 1.0
+        else:
+            avg_a_goals = sum(m.ft_away_goals for m in a_matches) / total_a_matches
+            avg_a_goals_conceeded = sum(m.ft_home_goals for m in a_matches) / total_a_matches
+            raw_a_atk = (avg_a_goals / league_a_goal_avg) if league_a_goal_avg else 1.0
+            raw_a_def = (avg_a_goals_conceeded / league_h_goal_avg) if league_h_goal_avg else 1.0
         
-        h_goals_conceeded = sum(m.ft_away_goals for m in h_matches)
-        a_goals_conceeded = sum(m.ft_home_goals for m in a_matches)
+        prior_h_atk, prior_h_def, prior_a_atk, prior_a_def = self.get_team_prior_strengths(team_id)
         
-        avg_h_goals = h_goals / total_h_matches
-        avg_a_goals = a_goals / total_a_matches
+        K = 6.0
+        w_home_prior = max(0.0, (K - total_h_matches) / K)
+        w_away_prior = max(0.0, (K - total_a_matches) / K)
         
-        avg_h_goals_conceeded = h_goals_conceeded / total_h_matches
-        avg_a_goals_conceeded = a_goals_conceeded / total_a_matches
+        h_atk = (w_home_prior * prior_h_atk) + ((1.0 - w_home_prior) * raw_h_atk)
+        h_def = (w_home_prior * prior_h_def) + ((1.0 - w_home_prior) * raw_h_def)
+        a_atk = (w_away_prior * prior_a_atk) + ((1.0 - w_away_prior) * raw_a_atk)
+        a_def = (w_away_prior * prior_a_def) + ((1.0 - w_away_prior) * raw_a_def)
         
-        h_atk = avg_h_goals / league_h_goal_avg
-        h_def = avg_h_goals_conceeded / league_a_goal_avg
-        
-        a_atk = avg_a_goals / league_a_goal_avg
-        a_def = avg_a_goals_conceeded / league_h_goal_avg
-
         return h_atk, h_def, a_atk, a_def
     
     def generate_team_profile(self, team_id: int):
@@ -170,3 +183,34 @@ class TeamService(BaseService):
             },
             'points_per_game': self.ppg(team_id)
         }
+        
+    def get_team_prior_strengths(self, team_id: int):
+        prev_season_id = self.get_previous_season_id()
+        
+        if not prev_season_id:
+            # First season baseline
+            return 1.0, 1.0, 1.0, 1.0
+        
+        was_in_comp = self.session.exec(
+            select(TeamCompetition).where(
+                TeamCompetition.team_id == team_id,
+                TeamCompetition.competition_id == self.competition_id,
+                TeamCompetition.season_id == prev_season_id,
+            )
+        ).first()
+        
+        if not was_in_comp:
+            # Promoted team (slight penalties)
+            return 0.85, 1.15, 0.85, 1.15
+        
+        prev_service = TeamService(self.session, self.competition_id, prev_season_id)
+        raw_h_atk, raw_h_def, raw_a_atk, raw_a_def = prev_service.team_strengths(team_id)
+        
+        R = 0.60
+        return (
+            (R * raw_h_atk) + ((1 - R) * 1.0),
+            (R * raw_h_def) + ((1 - R) * 1.0),
+            (R * raw_a_atk) + ((1 - R) * 1.0),
+            (R * raw_a_def) + ((1 - R) * 1.0),
+        )
+        

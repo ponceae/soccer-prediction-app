@@ -26,24 +26,28 @@ class PredictionEngine(BaseService):
         
         return pv
     
-    def expected_goals(self, team_ids: HomeAwayID):
+    def expected_goals(self, team_ids: HomeAwayID, matchweek: int | None = None):
         team_service = TeamService(self.session, self.competition_id, self.season_id)
         
-        h_home_atk, h_home_def, _, _ = team_service.team_strengths(team_ids.home_team_id)
-        _, _, a_away_atk, a_away_def = team_service.team_strengths(team_ids.away_team_id)
+        h_home_atk, h_home_def, _, _ = team_service.team_strengths(
+            team_ids.home_team_id, up_to_mw=matchweek
+        )
+        _, _, a_away_atk, a_away_def = team_service.team_strengths(
+            team_ids.away_team_id, up_to_mw=matchweek
+        )
         
-        league_h_goal_avg, league_a_goal_avg = self.league_goal_averages()
+        league_h_goal_avg, league_a_goal_avg = self.league_goal_averages(up_to_mw=matchweek)
         
         home_xg = (h_home_atk * a_away_def) * league_h_goal_avg
         away_xg = (a_away_atk * h_home_def) * league_a_goal_avg
         
         return home_xg, away_xg
     
-    def poisson_prediction(self, team_ids: HomeAwayID):
+    def poisson_prediction(self, team_ids: HomeAwayID, matchweek: int | None = None):
         """
         Find and return the probabilities of a win, draw, and loss.
         """         
-        h_xg, a_xg = self.expected_goals(team_ids)
+        h_xg, a_xg = self.expected_goals(team_ids, matchweek=matchweek)
         
         h_poisson_values = self.generate_poisson_values(h_xg)
         a_poisson_values = self.generate_poisson_values(a_xg)
@@ -76,8 +80,8 @@ class PredictionEngine(BaseService):
                     
         return home_win_p, draw_p, away_win_p
     
-    def scoreline_chance(self, team_ids: HomeAwayID):
-        h_xg, a_xg = self.expected_goals(team_ids)
+    def scoreline_chance(self, team_ids: HomeAwayID, matchweek: int | None = None):
+        h_xg, a_xg = self.expected_goals(team_ids, matchweek=matchweek)
                 
         h_poisson_values = self.generate_poisson_values(h_xg)
         a_poisson_values = self.generate_poisson_values(a_xg)
@@ -102,9 +106,9 @@ class PredictionEngine(BaseService):
                 
         return scoreline 
     
-    def generate_matchup_prediction(self, teams: HomeAwayID):
-        h_xg, a_xg = self.expected_goals(teams)
-        home_win, draw, away_win = self.poisson_prediction(teams)
+    def generate_matchup_prediction(self, teams: HomeAwayID, matchweek: int | None = None):
+        h_xg, a_xg = self.expected_goals(teams, matchweek=matchweek)
+        home_win, draw, away_win = self.poisson_prediction(teams, matchweek=matchweek)
         
         return {
             'xg': {
@@ -116,6 +120,6 @@ class PredictionEngine(BaseService):
                 'away_win_probability': round((away_win * 100), 3),
                 'draw_probability': round((draw * 100), 3),
             },
-            'likely_scoreline': self.scoreline_chance(teams),
+            'likely_scoreline': self.scoreline_chance(teams, matchweek=matchweek),
         }
     
