@@ -1,0 +1,46 @@
+.stat-row {
+  margin-bottom: 15px;
+}
+
+.stat-values {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #2C3E50;
+}
+
+.stat-label {
+  color: #7F8C8D;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.home-value {
+  color: #3498DB;
+  font-size: 1.1rem;
+}
+
+.away-value {
+  color: #E74C3C;
+  font-size: 1.1rem;
+}
+
+.bar-track {
+  display: flex;
+  height: 8px;
+  background-color: #ECF0F1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.home-bar {
+  background-color: #3498DB;
+  transition: width 0.5s ease;
+}
+
+.away-bar {
+  background-color: #E74C3C;
+  transition: width 0.5s ease;
+}

@@ -153,3 +153,5 @@ class MatchupProfileResponse(BaseModel):
     h2h_matches: list[MatchWithTeams]
     home_recent_form: list[MatchWithTeams]
     away_recent_form: list[MatchWithTeams]
+    home_strengths: TeamStrengths
+    away_strengths: TeamStrengths

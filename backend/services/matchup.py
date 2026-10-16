@@ -5,6 +5,7 @@ from sqlmodel import and_, col, or_, select
 from models import Match
 from services.base import BaseService, HomeAwayID
 from services.prediction import PredictionEngine
+from services.team import TeamService
 
 class MatchupService(BaseService):
     def get_match_by_id(self, match_id: int):
@@ -72,6 +73,10 @@ class MatchupService(BaseService):
         h2h = self.get_h2h_matches(match.home_team_id, match.away_team_id, before_date=match.date)
         home_form = self.get_recent_form(match.home_team_id, before_date=match.date)
         away_form = self.get_recent_form(match.away_team_id, before_date=match.date)
+
+        team_service = TeamService(self.session, self.competition_id, self.season_id)
+        hh_atk, hh_def, ha_atk, ha_def = team_service.team_strengths(match.home_team_id, up_to_mw=match.matchweek)
+        ah_atk, ah_def, aa_atk, aa_def = team_service.team_strengths(match.away_team_id, up_to_mw=match.matchweek)
         
         return {
             'match': match,
@@ -79,4 +84,16 @@ class MatchupService(BaseService):
             'h2h_matches': h2h,
             'home_recent_form': home_form,
             'away_recent_form': away_form,
+            'home_strengths': {
+                'home_attack': hh_atk, 
+                'home_defense': hh_def,
+                'away_attack': ha_atk,
+                'away_defense': ha_def,
+            },
+            'away_strengths': {
+                'home_attack': ah_atk,
+                'home_defense': ah_def,
+                'away_attack': aa_atk,
+                'away_defense': aa_def,
+            },
         }

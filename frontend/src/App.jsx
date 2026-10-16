@@ -8,6 +8,7 @@ import LeagueTable from './components/LeagueTable';
 import TeamProfile from './components/TeamProfile';
 import LeagueSummary from './components/LeagueSummary';
 import Matchups from './components/Matchups';
+// import MatchupProfile from './components/MatchupProfile';
 import KnockoutBracket from './components/KnockoutBracket';
 
 export default function App() {
@@ -123,6 +124,7 @@ export default function App() {
               <Route path="knockout" element={<KnockoutBracket/>}/>
             </Route>
             <Route path="/team/:compId/:seasonId/:teamId" element={<TeamProfile/>}/>
+            {/* <Route path="/matchup/:compId/:seasonId/:matchId" element={<MatchupProfile/>}/> */}
           </Routes>
         
         </div>

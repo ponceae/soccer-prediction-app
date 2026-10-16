@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import styles from './Matchups.module.css';
 
 export default function Matchups() {
+  const navigate = useNavigate();
   const { compId, seasonId } = useParams();
   const [matchups, setMatchups] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,6 +54,10 @@ export default function Matchups() {
     }, 50);
   };
 
+  const handleMatchClick = (matchId) => {
+    navigate(`/matchup/${compId}/${seasonId}/${matchId}`);
+  };
+
   if (error) {
     return <div className="status-message error">{error}</div>;
   }
@@ -71,8 +76,8 @@ export default function Matchups() {
 
   return (
     <div 
-    id="matchup-container"
-    className={styles['matchups-container']}
+      id="matchup-container"
+      className={styles['matchups-container']}
     >
     
       <div className={styles['matchweek-jumper']}>
@@ -108,7 +113,11 @@ export default function Matchups() {
 
             <div className={styles['matchweek-games']}>
               {groupedMatchups[week].map((match) => (
-                <div key={match.id} className={styles['match-row']}>
+                <div 
+                  key={match.id} 
+                  className={styles['match-row']}
+                  onClick={() => handleMatchClick(match.id)}
+                >
                   <div className={styles['match-date']}>
                     {new Date(match.date).toLocaleDateString('en-US', {
                       month: 'short', day: 'numeric', year: 'numeric'
