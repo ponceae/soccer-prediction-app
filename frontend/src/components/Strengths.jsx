@@ -19,11 +19,15 @@ export default function Strengths({
     <div className="chart-card strengths-card">
       <h3 className="chart-title-compact">Model Strengths</h3>
       <ResponsiveContainer width="100%" height={250}>
-        <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
+        <RadarChart cx="50%" cy="50%" outerRadius="50%" data={radarData}>
           <PolarGrid/>
           <PolarAngleAxis dataKey="metric" tick={{ fill: '#2C3E50', fontSize: 12 }}/>
           <Tooltip formatter={(value) => value.toFixed(2)}/>
-          <Legend verticalAlign="bottom"/>
+          <Legend 
+            verticalAlign="bottom"
+            wrapperStyle={{ paddingTop: '20px', paddingInline: '5px' }}
+            outerRadius
+          />
           <Radar 
             name={homeTeamName} 
             dataKey="homeValue" 

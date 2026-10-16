@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 
 import styles from './KnockoutBracket.module.css';
 
 export default function KnockoutBracket() {
+  const navigate = useNavigate();
   const { compId, seasonId } = useParams();
 
   const [knockoutMatches, setKnockoutMatches] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeModalTie, setActiveModalTie] = useState(null);
+  const [hoveredNode, setHoveredNode] = useState(null);
 
   const location = useLocation();
   const currentLeague = location.state;
@@ -17,6 +20,10 @@ export default function KnockoutBracket() {
     (season) => season.season_id.toString() === seasonId.toString()
   )
   const displayYear = activeSeason ? activeSeason.season_year: '';
+
+  const handleMatchClick = (matchId) => {
+    navigate(`/matchup/${compId}/${seasonId}/${matchId}`);
+  }
 
   useEffect(() => {
     async function loadKnockoutMatches() {
@@ -129,7 +136,7 @@ export default function KnockoutBracket() {
 
     const eliminatedId = scoreA > scoreB ? teamBId : (scoreB > scoreA ? teamAId: null);
 
-    return {teamA, teamB, teamAId, teamBId, scoreA, scoreB, subText, eliminatedId};
+    return {teamA, teamB, teamAId, teamBId, scoreA, scoreB, subText, eliminatedId, matches: legMatches };
   }
 
   const tieA = getAggregateTieData(tiesArray[0]);
@@ -167,7 +174,12 @@ export default function KnockoutBracket() {
             <div className={styles['bracket-column']}>
               <h4 className={styles['bracket-column-title']}>Semi-Final A</h4>
               {tieA && (
-                <div className={styles['bracket-node']}>
+                <div 
+                  className={`${styles['bracket-node']} ${(hoveredNode === 'tieA' || hoveredNode === 'final') ? styles.highlightedNode : ''}`}
+                  onMouseEnter={() => setHoveredNode('tieA')}
+                  onMouseLeave={() => setHoveredNode(null)}
+                  onClick={() => setActiveModalTie(tieA)}
+                >
                   <div className="match-scoreline knockout">
                     <div className={`${styles['bracket-team']} ${styles['bracket-team-home']} ${
                       isDisqualified(tieA.teamA?.name) ? styles.disqualified : tieA.eliminatedId === tieA.teamAId ? styles.eliminated: ''
@@ -200,7 +212,7 @@ export default function KnockoutBracket() {
               )}
             </div>
             <div className={styles['bracket-connectors']}>
-              <div className={`${styles['connector-line']} ${styles.center}`}></div>
+              <div className={`${styles['connector-line']} ${styles.center} ${(hoveredNode === 'tieA' || hoveredNode === 'final') ? styles.highlightedLine : ''}`}></div>
             </div>
           </div>
 
@@ -208,7 +220,12 @@ export default function KnockoutBracket() {
             <div className={styles['bracket-column']}>
               <h4 className={styles['bracket-column-title']}>Final</h4>
               {finalMatch && (
-                <div className={styles['bracket-node']}>
+                <div 
+                  className={`${styles['bracket-node']} ${hoveredNode !== null ? styles.highlightedNode : ''}`}
+                  onMouseEnter={() => setHoveredNode('final')}
+                  onMouseLeave={() => setHoveredNode(null)}
+                  onClick={() => handleMatchClick(finalMatch.id)}
+                >
                   <div className="match-scoreline knockout">
                     <div className={`${styles['bracket-team']} ${styles['bracket-team-home']} ${
                       isDisqualified(finalMatch.home_team?.name) ? styles.disqualified : finalEliminatedId === finalMatch.home_team_id ? styles.eliminated: ''
@@ -246,12 +263,17 @@ export default function KnockoutBracket() {
 
           <div className={styles['bracket-column-group']}>
             <div className={styles['bracket-connectors']}>
-              <div className={`${styles['connector-line']} ${styles.center}`}></div>
+              <div className={`${styles['connector-line']} ${styles.center} ${(hoveredNode === 'tieB' || hoveredNode === 'final') ? styles.highlightedLine: ''}`}></div>
             </div>
             <div className={styles['bracket-column']}>
               <h4 className={styles['bracket-column-title']}>Semi-Final B</h4>
               {tieB && (
-                <div className={styles['bracket-node']}>
+                <div 
+                  className={`${styles['bracket-node']} ${(hoveredNode === 'tieB' || hoveredNode === 'final') ? styles.highlightedNode : ''}`}
+                  onMouseEnter={() => setHoveredNode('tieB')}
+                  onMouseLeave={() => setHoveredNode(null)}
+                  onClick={() => setActiveModalTie(tieB)}
+                >
                   <div className="match-scoreline knockout">
                     <div className={`${styles['bracket-team']} ${styles['bracket-team-home']} ${
                       isDisqualified(tieB.teamA?.name) ? styles.disqualified : tieB.eliminatedId === tieB.teamAId ? styles.eliminated: ''
@@ -284,10 +306,55 @@ export default function KnockoutBracket() {
               )}
             </div>
           </div>
-
         </div>
-
       </div>
+
+      {activeModalTie && (
+        <div className={styles['modal-overlay']} onClick={() => setActiveModalTie(null)}>
+          <div className={styles['modal-content']} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles['modal-title']}>Two-legged tie</h3>
+
+            <div className={styles['modal-match-list']}>
+              {activeModalTie.matches.map((m) => (
+                <div
+                  key={m.id}
+                  className={styles['modal-match-row']}
+                  onClick={() => handleMatchClick(m.id)}
+                >
+                  <div className={styles['modal-match-date']}>
+                    {new Date(m.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                  </div>
+                  <div className={styles['modal-match-teams']}>
+                    <div className={`${styles['modal-team']} ${activeModalTie.eliminatedId === m.home_team_id ? styles.eliminated : ''}`}>
+                      <span>{m.home_team.name}</span>
+                      <img
+                        src={`/logos/teams/${m.home_team_id}.svg`}
+                        alt={`${m.home_team?.name}`}
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    </div>
+
+                    <div className={styles['modal-score']}>{m.ft_home_goals} - {m.ft_away_goals}</div>
+
+                    <div className={`${styles['modal-team']} ${styles['modal-team-away']} ${activeModalTie.eliminatedId === m.away_team_id ? styles.eliminated : ''}`}>
+                      <img
+                        src={`/logos/teams/${m.away_team_id}.svg`}
+                        alt={`${m.away_team?.name}`}
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                      <span>{m.away_team.name}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button className={styles['modal-close-btn']} onClick={() => setActiveModalTie(null)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

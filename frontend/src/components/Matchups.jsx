@@ -33,15 +33,29 @@ export default function Matchups() {
   }, [compId, seasonId]);
 
   useEffect(() => {
-    const snapToPane = setTimeout(() => {
-      const container = document.getElementById("matchup-container");
-      if (container) {
-        const yOffset = container.getBoundingClientRect().top + window.scrollY - 20;
-        window.scrollTo({ top: yOffset, behavior: 'smooth' });
-      }
-    }, 100);
-    return () => clearTimeout(snapToPane);
-  }, [compId, seasonId]);
+    if (isLoading) return;
+
+    const lastMatchId = sessionStorage.getItem('lastViewedMatchId');
+
+    if (lastMatchId) {
+      setTimeout(() => {
+        const element = document.getElementById(`match-${lastMatchId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'instant', block: 'center' });
+        }
+      }, 100);
+      sessionStorage.removeItem('lastViewedMatchId');
+    } else {
+      const snapToPane = setTimeout(() => {
+        const container = document.getElementById("matchup-container");
+        if (container) {
+          const yOffset = container.getBoundingClientRect().top + window.scrollY - 20;
+          window.scrollTo({ top: yOffset, behavior: 'smooth' });
+        }
+      }, 100);
+      return () => clearTimeout(snapToPane);
+    }
+  }, [compId, seasonId, isLoading]);
 
   const scrollToWeek = (week) => {
     setIsGridOpen(false)
@@ -55,6 +69,7 @@ export default function Matchups() {
   };
 
   const handleMatchClick = (matchId) => {
+    sessionStorage.setItem('lastViewedMatchId', matchId);
     navigate(`/matchup/${compId}/${seasonId}/${matchId}`);
   };
 
@@ -115,6 +130,7 @@ export default function Matchups() {
               {groupedMatchups[week].map((match) => (
                 <div 
                   key={match.id} 
+                  id={`match-${match.id}`}
                   className={styles['match-row']}
                   onClick={() => handleMatchClick(match.id)}
                 >

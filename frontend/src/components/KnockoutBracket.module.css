@@ -105,6 +105,8 @@
   width: 100%;
   display: flex;
   align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .bracket-team {
@@ -185,4 +187,130 @@
   width: 100%;
   height: 2px;
   background-color: #CBD5E1;
+}
+
+.highlightedLine {
+  background-color: #2ECC71 !important;
+  transition: background-color 0.2s ease;
+}
+
+.highlightedNode {
+  box-shadow: 0 0 0 2px #2ECC71, 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-2px);
+  transition: all 0.2s ease; 
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #FFFFFF;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  padding: 20px;
+  color: #2C3E50;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.modal-title {
+  text-align: center;
+  margin: 0 0 20px 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #2C3E50;
+  border-bottom: 1px solid #ECF0F1;
+  padding-bottom: 15px;
+}
+
+.modal-match-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-match-row {
+  padding: 15px;
+  border-bottom: 1px solid #ECF0F1;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-radius: 8px;
+}
+
+.modal-match-row:hover {
+  background-color: #F8F9FA;
+}
+
+.modal-match-row:last-child {
+  border-bottom: none;
+}
+
+.modal-match-date {
+  font-size: 0.8rem;
+  color: #7F8C8D;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.modal-match-teams {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-team {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #2C3E50;
+}
+
+.modal-team img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.modal-team-away {
+  justify-content: flex-end;
+}
+
+.modal-score {
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0 15px;
+  color: #2C3E50;
+}
+
+.modal-close-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  background: transparent;
+  border: none;
+  color: #3498DB;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+  color: #2980B9;
+}
+
+.eliminated {
+  opacity: 0.5;
 }
