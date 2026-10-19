@@ -57,9 +57,9 @@ export default function MatchupProfile() {
 
   const outcomeData = predictions ? [{
     name: 'Match Odds',
-    Win: predictions.win_probability.home_win_probability,
-    Draw: predictions.win_probability.draw_probability,
-    Loss: predictions.win_probability.away_win_probability,
+    Win: (predictions.win_probability.home_win_probability).toFixed(1),
+    Draw: (predictions.win_probability.draw_probability).toFixed(1),
+    Loss: (predictions.win_probability.away_win_probability).toFixed(1),
   }] : [];
 
   const radarData = (home_strengths && away_strengths) ? [
@@ -155,7 +155,7 @@ export default function MatchupProfile() {
 
               <div className={styles['matchup-date']}>
                 {!isKnockout && `Round ${match.matchweek} • `}
-                {new Date(match.date).toLocaleDateString()}
+                {new Date(match.date).toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'})}
               </div>
 
               {match.referee && (

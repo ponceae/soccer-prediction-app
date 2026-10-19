@@ -59,10 +59,10 @@ export default function TeamProfile() {
   }]
 
   const radarData = [
-    { metric: 'Home Attack', value: teamData.strengths.home_attack },
-    { metric: 'Away Attack', value: teamData.strengths.away_attack },
-    { metric: 'Home Defense', value: teamData.strengths.home_defense },
-    { metric: 'Away Defense', value: teamData.strengths.away_defense },
+    { metric: 'Home Attack', homeValue: teamData.strengths.home_attack },
+    { metric: 'Away Attack', homeValue: teamData.strengths.away_attack },
+    { metric: 'Home Defense', homeValue: teamData.strengths.home_defense },
+    { metric: 'Away Defense', homeValue: teamData.strengths.away_defense },
   ]
 
   return (
@@ -104,7 +104,7 @@ export default function TeamProfile() {
 
       <div className={styles['graphs-container']}>
         <Outcomes outcomeData={outcomeData}/>
-        <Strengths radarData={radarData} teamName={teamName}/>
+        <Strengths radarData={radarData} homeTeamName={teamName}/>
       </div>
     </div>
   );

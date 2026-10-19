@@ -1,6 +1,7 @@
 import { 
   PolarAngleAxis,
   PolarGrid, 
+  PolarRadiusAxis,
   Radar, 
   RadarChart,  
   ResponsiveContainer,
@@ -22,12 +23,15 @@ export default function Strengths({
         <RadarChart cx="50%" cy="50%" outerRadius="50%" data={radarData}>
           <PolarGrid/>
           <PolarAngleAxis dataKey="metric" tick={{ fill: '#2C3E50', fontSize: 12 }}/>
+          <PolarRadiusAxis angle={30} domain={[0, 2]} tick={false} axisLine={false}/>
           <Tooltip formatter={(value) => value.toFixed(2)}/>
-          <Legend 
+          {awayTeamName && (
+            <Legend 
             verticalAlign="bottom"
             wrapperStyle={{ paddingTop: '20px', paddingInline: '5px' }}
             outerRadius
           />
+          )}
           <Radar 
             name={homeTeamName} 
             dataKey="homeValue" 
@@ -35,13 +39,15 @@ export default function Strengths({
             fill={homeColor} 
             fillOpacity={0.5}
           />
-          <Radar 
-            name={awayTeamName} 
-            dataKey="awayValue" 
-            stroke={awayColor} 
-            fill={awayColor}
-            fillOpacity={0.5}
+          {awayTeamName && (
+            <Radar 
+              name={awayTeamName} 
+              dataKey="awayValue" 
+              stroke={awayColor} 
+              fill={awayColor}
+              fillOpacity={0.5}
           />
+          )}
         </RadarChart>
       </ResponsiveContainer>
     </div>
