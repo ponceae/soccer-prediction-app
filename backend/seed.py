@@ -73,6 +73,7 @@ TEAM_LU = {
     'Shrewsbury': 'Shrewsbury Town',
     'Swindon': 'Swindon Town',
     'Tranmere': 'Tranmere Rovers',
+    'Carlisle': 'Carlisle United',
 }
 
 COMP_LU = {
@@ -86,6 +87,7 @@ PRIMARY_COMP = {'epl', 'championship', 'eleague1', 'eleague2'}
 
 F_SEASONS = {
     '2526': '2025-26',
+    '2425': '2024-25'
 }
 
 LEAGUE_COUNTRIES = {
@@ -459,7 +461,14 @@ def seed_database():
             'data/eleague1_2526_season_matches.csv',
             'data/eleague1_2526_playoff_matches.csv',
             'data/eleague2_2526_season_matches.csv',
-            'data/eleague2_2526_playoff_matches.csv'
+            'data/eleague2_2526_playoff_matches.csv',
+            'data/epl_2425_season_matches.csv',
+            'data/championship_2425_season_matches.csv',
+            'data/eleague1_2425_season_matches.csv',
+            'data/eleague2_2425_season_matches.csv',
+            'data/championship_2425_playoff_matches.csv',
+            'data/eleague1_2425_playoff_matches.csv',
+            'data/eleague2_2425_playoff_matches.csv',
         ]
         
         for match_file in match_csvs:
