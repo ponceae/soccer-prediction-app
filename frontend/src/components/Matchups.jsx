@@ -143,7 +143,12 @@ export default function Matchups() {
                   <div className="match-scoreline">
                     
                     <div className={styles['team-home']}>
-                      <span>{match.home_team.name}</span>
+                      <span>
+                        {match.home_team.name}
+                        {match.home_red_cards > 0 && Array.from({ length: match.home_red_cards }).map((_, i) => (
+                          <span key={`home-red-${i}`} className='red-card-icon' title='Red Card'></span>
+                        ))}
+                      </span>
                       <img
                         src={`/logos/teams/${match.home_team.id}.svg`}
                         alt="badge"
@@ -157,7 +162,12 @@ export default function Matchups() {
                     </span>
 
                     <div className={styles['team-away']}>
-                      <span>{match.away_team.name}</span>
+                      <span>
+                        {match.away_team.name}
+                        {match.away_red_cards > 0 && Array.from({ length: match.away_red_cards }).map((_, i) => (
+                          <span key={`away-red-${i}`} className='red-card-icon' title='Red Card'></span>
+                        ))}
+                      </span>
                       <img
                         src={`/logos/teams/${match.away_team.id}.svg`}
                         alt="badge"

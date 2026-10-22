@@ -11,6 +11,7 @@ export default function LeagueLayout({ currentLeague }) {
     (season) => season.season_id.toString() === seasonId.toString()
   );
   const displayYear = activeSeason ? activeSeason.season_year : '';
+  const currentTab = location.pathname.split('/')[4] || 'table';
 
   return (
     <div className="league-layout">
@@ -39,7 +40,7 @@ export default function LeagueLayout({ currentLeague }) {
           seasons={currentLeague?.seasons || []}
           currSeasonId={seasonId}
           onSeasonChange={(newId) => 
-            navigate(`/league/${compId}/${newId}`, { 
+            navigate(`/league/${compId}/${newId}/${currentTab}`, { 
               state: currentLeague 
             })
           }

@@ -105,7 +105,12 @@ export default function MatchupProfile() {
             className={styles['team-badge']}
             onError={(e) => { e.target.style.display = 'none'; }}
           />
-          <h2>{match.home_team.name}</h2>
+          <h2>
+            {match.home_team.name}
+            {match.home_red_cards > 0 && Array.from({ length: match.home_red_cards }).map((_, i) => (
+              <span key={`home-red-${i}`} className='red-card-icon' title='Red Card'></span>
+            ))}
+          </h2>
         </div>
 
         {(() => {
@@ -174,7 +179,12 @@ export default function MatchupProfile() {
             className={styles['team-badge']}
             onError={(e) => { e.target.style.display = 'none'; }}
           />
-          <h2>{match.away_team.name}</h2>
+          <h2>
+            {match.away_team.name}
+            {match.away_red_cards > 0 && Array.from({ length: match.away_red_cards }).map((_, i) => (
+              <span key={`away-red-${i}`} className='red-card-icon' title='Red Card'></span>
+            ))}
+          </h2>
         </div>
       </div>
 

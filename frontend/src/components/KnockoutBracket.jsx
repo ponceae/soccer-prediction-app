@@ -326,7 +326,12 @@ export default function KnockoutBracket() {
                   </div>
                   <div className={styles['modal-match-teams']}>
                     <div className={`${styles['modal-team']} ${activeModalTie.eliminatedId === m.home_team_id ? styles.eliminated : ''}`}>
-                      <span>{m.home_team.name}</span>
+                      <span>
+                        {m.home_team.name}
+                        {m.home_red_cards > 0 && Array.from({ length: m.home_red_cards }).map((_, i) => (
+                          <span key={`home-red-${i}`} className='red-card-icon' title={`${m.home_red_cards} Red Card`}></span>
+                        ))}
+                      </span>
                       <img
                         src={`/logos/teams/${m.home_team_id}.svg`}
                         alt={`${m.home_team?.name}`}
@@ -342,7 +347,12 @@ export default function KnockoutBracket() {
                         alt={`${m.away_team?.name}`}
                         onError={(e) => { e.target.style.display = 'none'; }}
                       />
-                      <span>{m.away_team.name}</span>
+                      <span>
+                        {m.away_team.name}
+                        {m.away_red_cards > 0 && Array.from({ length: m.away_red_cards }).map((_, i) => (
+                          <span key={`away-red-${i}`} className='red-card-icon' title={`${m.away_red_cards} Red Card`}></span>
+                        ))}
+                      </span>
                     </div>
                   </div>
                 </div>

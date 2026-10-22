@@ -157,6 +157,17 @@ body {
   color: #E74C3C;
 }
 
+.red-card-icon {
+  display: inline-block;
+  width: 8px;
+  height: 12px;
+  background-color: #E74C3C;
+  border-radius: 2px;
+  margin-left: 4px;
+  vertical-align: super;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
 /*
 +==========+
   Layouts
