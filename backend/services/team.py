@@ -113,7 +113,9 @@ class TeamService(BaseService):
     def team_strengths(self, team_id: int, up_to_mw: int | None = None):
         max_matchweek = self.max_regular_season_matchweek()
 
-        league_h_goal_avg, league_a_goal_avg = self.league_goal_averages(up_to_mw=up_to_mw)
+        league_h_goal_avg, league_a_goal_avg = self.league_goal_averages(
+            up_to_mw=up_to_mw
+        )
 
         base_h_conditions = [
             Match.competition_id == self.competition_id,
@@ -158,7 +160,12 @@ class TeamService(BaseService):
             raw_a_atk = (avg_a_goals / league_a_goal_avg) if league_a_goal_avg else 1.0
             raw_a_def = (avg_a_goals_conceeded / league_h_goal_avg) if league_h_goal_avg else 1.0
         
-        prior_h_atk, prior_h_def, prior_a_atk, prior_a_def = self.get_team_prior_strengths(team_id)
+        (
+            prior_h_atk, 
+            prior_h_def, 
+            prior_a_atk, 
+            prior_a_def
+        ) = self.get_team_prior_strengths(team_id)
         
         K = 6.0
         w_home_prior = max(0.0, (K - total_h_matches) / K)
@@ -208,7 +215,9 @@ class TeamService(BaseService):
             return 1.0, 1.0, 1.0, 1.0
         
         was_in_comp = self.session.exec(
-            select(TeamCompetition).where(
+            select(
+                TeamCompetition
+            ).where(
                 TeamCompetition.team_id == team_id,
                 TeamCompetition.competition_id == self.competition_id,
                 TeamCompetition.season_id == prev_season_id,
