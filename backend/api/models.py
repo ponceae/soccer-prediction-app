@@ -1,10 +1,10 @@
 from typing import Optional
 from sqlmodel import Field, Relationship, UniqueConstraint
-from schemas import (
-    TeamBase,
-    SeasonBase,
+from backend.api.schemas import (
     CompetitionBase,
     MatchBase,
+    SeasonBase,
+    TeamBase,
     TeamCompetitionBase,
 )
 

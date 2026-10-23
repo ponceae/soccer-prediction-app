@@ -1,9 +1,24 @@
 from collections import defaultdict
+from typing import Sequence
 from sqlmodel import col, select, Session
 
-import models
+import backend.api.models as models
 
-def generate_menu_data(session: Session):
+def generate_menu_data(session: Session) -> defaultdict:
+    """ 
+    Build a nested dictionary of competitions and seasons.
+    
+    Args:
+        session (Session): The current working database.
+        
+    Returns:
+        defaultdict: Nested dictionary mapping countries to competitions, containing
+            lists of the following season metadata:
+                - Competition ID
+                - Season ID
+                - Season year
+                - Competition knockout flag identifier.
+    """
     statement = (
         select(
             models.Competition, 
@@ -24,7 +39,6 @@ def generate_menu_data(session: Session):
             col(models.Season.year).desc(),
         )
     )
-
     results = session.exec(statement).all()
     
     menu = defaultdict(lambda: defaultdict(list))
@@ -39,12 +53,15 @@ def generate_menu_data(session: Session):
     
     return menu
 
+def get_all_teams(session: Session):
+    return session.exec(select(models.Team).order_by(col(models.Team.name))).all()
+
 def get_team_competitions(team_id: int, session: Session):
     statement = session.exec(
         select(
-            models.TeamCompetition).where(models.TeamCompetition.team_id == team_id)
-        ).all()
-    return statement 
-
-def get_all_teams(session: Session):
-    return session.exec(select(models.Team).order_by(col(models.Team.name))).all()
+            models.TeamCompetition
+        )
+        .where(models.TeamCompetition.team_id == team_id)
+    ).all()
+    
+    return statement

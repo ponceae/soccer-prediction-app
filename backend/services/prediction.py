@@ -6,8 +6,9 @@ from services.team import TeamService
 MAX_GOAL_THRESHOLD = 8
 
 class PredictionEngine(BaseService):
+    
     @staticmethod
-    def generate_poisson_values(xg: float):
+    def generate_poisson_values(xg: float) -> list[float]:
         """
         Generate and return a list of possion values from `0` goals to the model's 
         `MAX_GOAL_THRESHOLD` limit based on the given expected goals value.
@@ -27,6 +28,9 @@ class PredictionEngine(BaseService):
         return pv
     
     def expected_goals(self, team_ids: HomeAwayID, matchweek: int | None = None):
+        """ 
+        Calculate and return the expected goals in a particular matchup.
+        """
         team_service = TeamService(self.session, self.competition_id, self.season_id)
         
         h_home_atk, h_home_def, _, _ = team_service.team_strengths(
@@ -36,16 +40,21 @@ class PredictionEngine(BaseService):
             team_ids.away_team_id, up_to_mw=matchweek
         )
         
-        league_h_goal_avg, league_a_goal_avg = self.league_goal_averages(up_to_mw=matchweek)
+        league_h_goal_avg, league_a_goal_avg = self.league_goal_averages(
+            up_to_mw=matchweek
+        )
         
         home_xg = (h_home_atk * a_away_def) * league_h_goal_avg
         away_xg = (a_away_atk * h_home_def) * league_a_goal_avg
         
         return home_xg, away_xg
     
-    def poisson_prediction(self, team_ids: HomeAwayID, matchweek: int | None = None):
+    def poisson_prediction(
+        self, team_ids: HomeAwayID, matchweek: int | None = None
+    ) -> tuple[float, float, float]:
         """
-        Find and return the probabilities of a win, draw, and loss.
+        Find and return the probabilities of a win, draw, and loss, using the 
+        Poisson prediction model.
         """         
         h_xg, a_xg = self.expected_goals(team_ids, matchweek=matchweek)
         
@@ -81,6 +90,9 @@ class PredictionEngine(BaseService):
         return home_win_p, draw_p, away_win_p
     
     def scoreline_chance(self, team_ids: HomeAwayID, matchweek: int | None = None):
+        """ 
+        Calculate and return the most likely scoreline for the given matchup.
+        """
         h_xg, a_xg = self.expected_goals(team_ids, matchweek=matchweek)
                 
         h_poisson_values = self.generate_poisson_values(h_xg)
@@ -106,7 +118,9 @@ class PredictionEngine(BaseService):
                 
         return scoreline 
     
-    def generate_matchup_prediction(self, teams: HomeAwayID, matchweek: int | None = None):
+    def generate_matchup_prediction(
+        self, teams: HomeAwayID, matchweek: int | None = None
+    ):
         h_xg, a_xg = self.expected_goals(teams, matchweek=matchweek)
         home_win, draw, away_win = self.poisson_prediction(teams, matchweek=matchweek)
         

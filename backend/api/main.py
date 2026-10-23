@@ -3,14 +3,16 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, SQLModel
 
-from database import engine, get_session
+from backend.api.database import engine, get_session
+import backend.api.models as models, backend.api.schemas as schemas
+import backend.api.responses as responses
+
 from services import globals
 from services.base import HomeAwayID
 from services.league import LeagueService
 from services.matchup import MatchupService
 from services.prediction import PredictionEngine
 from services.team import TeamService
-import models as models, schemas as schemas
 
 # +==============+
 #   Route Setup
@@ -118,7 +120,7 @@ def get_team_competitions_route(team_id: int, session: Session = Depends(get_ses
 #     League Specific Routes
 # +============================+
 
-@league_router.get('/summary', response_model=schemas.LeagueSummaryResponse)
+@league_router.get('/summary', response_model=responses.LeagueSummaryResponse)
 def get_league_summary(leagues: LeagueService = Depends(get_league_service)):
     return leagues.league_summary()
 
@@ -138,14 +140,14 @@ def get_league_knockouts(leagues: LeagueService = Depends(get_league_service)):
 #     Matchup Specific Routes
 # +============================+
 
-@prediction_router.get('/prediction', response_model=schemas.PredictionResponse)
+@prediction_router.get('/prediction', response_model=responses.PredictionResponse)
 def get_matchup_prediction(
     predictions: PredictionEngine = Depends(get_prediction_engine), 
     teams: HomeAwayID = Depends(get_team_matchups),
 ):
     return predictions.generate_matchup_prediction(teams)
 
-@prediction_router.get('/{match_id}/profile', response_model=schemas.MatchupProfileResponse)
+@prediction_router.get('/{match_id}/profile', response_model=responses.MatchupProfileResponse)
 def get_matchup_profile(
     match_id: int,
     matchup: MatchupService = Depends(get_matchup_service)
@@ -159,7 +161,7 @@ def get_matchup_profile(
 #     Team Specific Routes
 # +============================+
 
-@team_stats_router.get('/profile', response_model=schemas.TeamProfileResponse)
+@team_stats_router.get('/profile', response_model=responses.TeamProfileResponse)
 def get_team_profile(
     team_id: int, 
     session: Session = Depends(get_session), 

@@ -1,11 +1,18 @@
 from sqlmodel import and_, col, or_, select
 from sqlalchemy.orm import selectinload 
 
-from models import Match, Team, TeamCompetition
+from backend.api.models import Match, Team, TeamCompetition
 from services.base import BaseService
 
 class LeagueService(BaseService):
-    def btts_rate(self):
+    
+    def btts_rate(self) -> float:
+        """ 
+        Calculate the rate of both teams scoring in the current competition season.
+        
+        Returns:
+            float: The rate that both teams will score in the competition season.
+        """
         max_matchweek_games = self.max_regular_season_matchweek()
 
         statement = select(Match).where(
@@ -21,15 +28,22 @@ class LeagueService(BaseService):
         if not total_matches:
             return 0.0
         
-        bts = 0
+        btts_count = 0
         
         for match in matches:
             if match.ft_home_goals > 0 and match.ft_away_goals > 0:
-                bts += 1
+                btts_count += 1
                 
-        return bts / total_matches
+        return btts_count / total_matches
     
-    def over_rate(self):
+    def over_rate(self) -> float:
+        """ 
+        Calculate the rate of over 2.5 goals in the current competition season.
+        
+        Returns:
+            float: The rate that over 2.5 goals will be scored in the competition 
+                season.
+        """
         max_matchweek_games = self.max_regular_season_matchweek()
 
         statement = select(Match).where(
@@ -53,7 +67,16 @@ class LeagueService(BaseService):
         
         return over_count / total_matches
     
-    def league_summary(self):
+    def league_summary(self) -> dict[str, float | dict[str, float]]:
+        """ 
+        Returns:
+            dict[str, float | dict[str, float]]: A dictionary containing the 
+                following league stats:
+                    - Home league goal average
+                    - Away league goal average
+                    - Both teams to score rate
+                    - Over 2.5 goals scored rate
+        """
         h_league_goal_avg, a_league_goal_avg = self.league_goal_averages()
         
         return {
@@ -65,7 +88,22 @@ class LeagueService(BaseService):
             'over_rate': self.over_rate(),
         }
     
-    def league_table_stats(self, team_id: int):
+    def league_table_stats(
+        self, team_id: int
+    ) -> tuple[int, int, int, int, int, int, int, int]:
+        """ 
+        Returns:
+            tuple[int, int, int, int, int, int, int, int]: The following league table
+                stats:
+                    - Wins
+                    - Losses
+                    - Draws
+                    - Matches played
+                    - Goals for
+                    - Goals against
+                    - Goal difference
+                    - Points
+        """
         max_matchweek_games = self.max_regular_season_matchweek()
                 
         statement = select(Match).where(
@@ -81,8 +119,7 @@ class LeagueService(BaseService):
         )
         team_matches = self.session.exec(statement).all()
         
-        wins, losses, draws = 0, 0, 0
-        gf, ga = 0, 0
+        wins, losses, draws, gf, ga = 0, 0, 0, 0, 0
         
         for match in team_matches:
             if match.home_team_id == team_id:
@@ -124,7 +161,8 @@ class LeagueService(BaseService):
         table = []
                 
         for team in league_teams:
-            assert team.id is not None
+            if team.id is None:
+                continue
             (
                 wins, 
                 losses, 
@@ -149,7 +187,9 @@ class LeagueService(BaseService):
                 'gd': gd,
             })
         
-        return sorted(table, key=lambda x: (x['points'], x['gd'], x['gf']), reverse=True)
+        return sorted(
+            table, key=lambda x: (x['points'], x['gd'], x['gf']), reverse=True
+        )
     
     def get_regular_season_matchups(self):
         max_matchweek_games = self.max_regular_season_matchweek()

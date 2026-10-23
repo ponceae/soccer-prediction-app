@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from sqlmodel import and_, col, func, select, Session
 
-from models import Match, TeamCompetition, Season
+from backend.api.models import Match, TeamCompetition, Season
 
 @dataclass
 class HomeAwayID:
@@ -14,7 +14,20 @@ class BaseService:
     competition_id: int
     season_id: int
     
-    def league_goal_averages(self, up_to_mw: int | None = None):
+    def league_goal_averages(self, up_to_mw: int | None = None) -> tuple[float, float]:
+        """ 
+        Calculate the league goal averages up to the specified matchweek for 
+        the specified league. If no matches have been played fallback to a default
+        value.
+        
+        Args:
+            up_to_mw (int | None): The max matchweek limit.
+            
+        Returns:
+            tuple[float, float]: The following league stats:
+                - Home goal average
+                - Away goal average
+        """
         max_matchweek = self.max_regular_season_matchweek()
 
         conditions = [
@@ -41,18 +54,34 @@ class BaseService:
         
         return h_goal_avg, a_goal_avg
     
-    def max_regular_season_matchweek(self):
+    def max_regular_season_matchweek(self) -> int:
+        """ 
+        Calculate the maximum number of matchweeks possible in the regular season
+        for the specified league.
+        
+        Returns:
+            int: The maximum number of matchweeks
+        """
         team_count = self.session.exec(
-        select(func.count(col(TeamCompetition.team_id)))
-        .where(
-            TeamCompetition.competition_id == self.competition_id,
-            TeamCompetition.season_id == self.season_id,
+            select(
+                func.count(col(TeamCompetition.team_id))
+            )
+            .where(
+                TeamCompetition.competition_id == self.competition_id,
+                TeamCompetition.season_id == self.season_id,
             )
         ).one()
 
         return (team_count - 1) * 2
     
-    def get_previous_season_id(self):
+    def get_previous_season_id(self) -> int | None:
+        """ 
+        Return the previous season's ID that appears chronologically ordered by
+        year if it exists.
+        
+        Returns:
+            (int | None) The previous season's ID, `None` if it does not exist.
+        """
         curr_season = self.session.get(Season, self.season_id)
         
         if not curr_season:
@@ -61,7 +90,9 @@ class BaseService:
         statement = (
             select(Season.id)
             .where(Season.year < curr_season.year)
-            .order_by(col(Season.year).desc())
+            .order_by(
+                col(Season.year).desc()
+            )
             .limit(1)
         )
         

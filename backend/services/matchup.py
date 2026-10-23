@@ -2,12 +2,13 @@ from datetime import date
 from sqlalchemy.orm import selectinload
 from sqlmodel import and_, col, or_, select
 
-from models import Match
+from backend.api.models import Match
 from services.base import BaseService, HomeAwayID
 from services.prediction import PredictionEngine
 from services.team import TeamService
 
 class MatchupService(BaseService):
+    
     def get_match_by_id(self, match_id: int):
         statement = (
             select(Match)
@@ -24,12 +25,20 @@ class MatchupService(BaseService):
         
         return self.session.exec(statement).first()
     
-    def get_h2h_matches(self, home_team_id: int, away_team_id: int, before_date: date, limit: int = 5):
+    def get_h2h_matches(
+        self, home_team_id: int, away_team_id: int, before_date: date, limit: int = 5
+    ):
         statement = (
             select(Match).where(
                 or_(
-                    and_(Match.home_team_id == home_team_id, Match.away_team_id == away_team_id),
-                    and_(Match.home_team_id == away_team_id, Match.away_team_id == home_team_id),
+                    and_(
+                        Match.home_team_id == home_team_id, 
+                        Match.away_team_id == away_team_id
+                    ),
+                    and_(
+                        Match.home_team_id == away_team_id, 
+                        Match.away_team_id == home_team_id
+                    ),
                 ),
                 Match.date < before_date,
             )
@@ -65,18 +74,30 @@ class MatchupService(BaseService):
         if not match:
             return None 
         
-        teams = HomeAwayID(home_team_id=match.home_team_id, away_team_id=match.away_team_id)
+        teams = HomeAwayID(
+            home_team_id=match.home_team_id, away_team_id=match.away_team_id
+        )
         
-        prediction_engine = PredictionEngine(self.session, self.competition_id, self.season_id)
-        predictions = prediction_engine.generate_matchup_prediction(teams, matchweek=match.matchweek)
+        prediction_engine = PredictionEngine(
+            self.session, self.competition_id, self.season_id
+        )
+        predictions = prediction_engine.generate_matchup_prediction(
+            teams, matchweek=match.matchweek
+        )
         
-        h2h = self.get_h2h_matches(match.home_team_id, match.away_team_id, before_date=match.date)
+        h2h = self.get_h2h_matches(
+            match.home_team_id, match.away_team_id, before_date=match.date
+        )
         home_form = self.get_recent_form(match.home_team_id, before_date=match.date)
         away_form = self.get_recent_form(match.away_team_id, before_date=match.date)
 
         team_service = TeamService(self.session, self.competition_id, self.season_id)
-        hh_atk, hh_def, ha_atk, ha_def = team_service.team_strengths(match.home_team_id, up_to_mw=match.matchweek)
-        ah_atk, ah_def, aa_atk, aa_def = team_service.team_strengths(match.away_team_id, up_to_mw=match.matchweek)
+        hh_atk, hh_def, ha_atk, ha_def = team_service.team_strengths(
+            match.home_team_id, up_to_mw=match.matchweek
+        )
+        ah_atk, ah_def, aa_atk, aa_def = team_service.team_strengths(
+            match.away_team_id, up_to_mw=match.matchweek
+        )
         
         return {
             'match': match,

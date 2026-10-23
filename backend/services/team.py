@@ -1,10 +1,15 @@
-from sqlmodel import and_, col, or_, select
+from sqlmodel import and_, or_, select
 
-from models import Match, TeamCompetition
+from backend.api.models import Match, TeamCompetition
 from services.base import BaseService
 
 class TeamService(BaseService):
+    
     def team_outcomes(self, team_id: int, up_to_mw: int | None = None):
+        """ 
+        Calculate and return the numer of wins, losses, or draws for the given team
+        and number of matches.
+        """
         max_matchweek = self.max_regular_season_matchweek()
 
         conditions = [
@@ -47,6 +52,10 @@ class TeamService(BaseService):
         return wins, losses, draws, total_matches
     
     def outcome_percentages(self, team_id: int):
+        """ 
+        Calculate and return the rate of wins, losses, or draws in the given amount
+        of games for the specified team.
+        """
         wins, losses, draws, total_matches = self.team_outcomes(team_id)
         
         if not total_matches:
@@ -59,12 +68,19 @@ class TeamService(BaseService):
         return wins, draws, losses
     
     def ppg(self, team_id: int):
+        """ 
+        Calculate and return the points per game rate for the specified team.
+        """
         wins, _, draws, total_matches = self.team_outcomes(team_id)
         total_points = (wins * 3) + draws
         
         return total_points / total_matches
     
     def team_clean_sheets(self, team_id: int):
+        """ 
+        Calculate and return the number of clean sheets for the given team in the
+        specified competition season.
+        """
         max_matchweek = self.max_regular_season_matchweek()
         
         statement = select(Match).where(
