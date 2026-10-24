@@ -322,12 +322,12 @@ export default function KnockoutBracket() {
                   onClick={() => handleMatchClick(m.id)}
                 >
                   <div className={styles['modal-match-date']}>
-                    {new Date(m.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                    {m.date ? new Date(m.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) : ''}
                   </div>
                   <div className={styles['modal-match-teams']}>
                     <div className={`${styles['modal-team']} ${activeModalTie.eliminatedId === m.home_team_id ? styles.eliminated : ''}`}>
                       <span>
-                        {m.home_team.name}
+                        {m.home_team?.name}
                         {m.home_red_cards > 0 && Array.from({ length: m.home_red_cards }).map((_, i) => (
                           <span key={`home-red-${i}`} className='red-card-icon' title={`${m.home_red_cards} Red Card`}></span>
                         ))}
@@ -348,7 +348,7 @@ export default function KnockoutBracket() {
                         onError={(e) => { e.target.style.display = 'none'; }}
                       />
                       <span>
-                        {m.away_team.name}
+                        {m.away_team?.name}
                         {m.away_red_cards > 0 && Array.from({ length: m.away_red_cards }).map((_, i) => (
                           <span key={`away-red-${i}`} className='red-card-icon' title={`${m.away_red_cards} Red Card`}></span>
                         ))}

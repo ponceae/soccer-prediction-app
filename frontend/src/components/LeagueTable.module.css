@@ -12,25 +12,24 @@
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
   overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: #FFFFFF;
 }
 
 .data-table th,
 .data-table td {
   padding: 12px 15px;
-  border-bottom: 1px solid #DDD;
   text-align: center;
   border: none;
 }
 
 .data-table th {
+  font-size: 14px;
+  text-transform: uppercase;
   background-color: #2C3E50;
   color: white;
-  text-transform: uppercase;
-  font-size: 14px;
 }
 
 .data-table th:first-child,
@@ -46,9 +45,9 @@
 }
 
 .data-table .team-badge {
+  object-fit: contain;
   width: 20px;
   height: 20px;
-  object-fit: contain;
 }
 
 .data-table tbody tr {

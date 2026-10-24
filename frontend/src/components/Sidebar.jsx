@@ -46,7 +46,7 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
 
   return (
     <aside className={sidebarClass} ref={sidebarRef}>
-      <div 
+      <button 
         className={styles['sidebar-home']}
         onClick={() => {
           navigate('/');
@@ -54,7 +54,7 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
         }}
       >
         Home
-      </div>
+      </button>
 
       <ul className={styles['country-list']}>
         {Object.entries(menuData).map(([country, leagues]) => {
@@ -62,13 +62,13 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
 
           return (
             <li key={country} className={styles['country-item']}>
-              <div 
+              <button 
                 className={`${styles['country-header']} ${isExpanded ? styles.active : ''}`}
                 onClick={() => toggleCountry(country)}
               >
                 {countryFlags[country] || '🌎'} {country} 
                 <span className={styles['arrow']}>▼</span>
-              </div>
+              </button>
               <ul className={`${styles['league-list']} ${isExpanded ? styles.show : ''}`}>
                 {Object.entries(leagues).map(([leagueName, seasons]) => {
                   const latestSeason = seasons[0];
@@ -77,8 +77,8 @@ export default function Sidebar({ menuData, isOpen, onLeagueClick, closeSidebar 
                     <li
                       key={leagueName}
                       onClick={() => onLeagueClick(
-                        latestSeason.competition_id,
-                        latestSeason.season_id,
+                        latestSeason?.competition_id,
+                        latestSeason?.season_id,
                         leagueName,
                         country,
                         seasons,

@@ -1,7 +1,7 @@
 from sqlmodel import and_, or_, select
 
 from backend.api.models import Match, TeamCompetition
-from services.base import BaseService
+from backend.services.base import BaseService
 
 class TeamService(BaseService):
     
@@ -111,6 +111,9 @@ class TeamService(BaseService):
         return h_cs_counter, a_cs_counter, (h_cs_counter + a_cs_counter)
     
     def team_strengths(self, team_id: int, up_to_mw: int | None = None):
+        """ 
+        Calculate a team's home and away attacking and defensive strengths.
+        """
         max_matchweek = self.max_regular_season_matchweek()
 
         league_h_goal_avg, league_a_goal_avg = self.league_goal_averages(

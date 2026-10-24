@@ -3,9 +3,9 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import and_, col, or_, select
 
 from backend.api.models import Match
-from services.base import BaseService, HomeAwayID
-from services.prediction import PredictionEngine
-from services.team import TeamService
+from backend.services.base import BaseService, HomeAwayID
+from backend.services.prediction import PredictionEngine
+from backend.services.team import TeamService
 
 class MatchupService(BaseService):
     

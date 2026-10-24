@@ -2,7 +2,7 @@ from sqlmodel import and_, col, or_, select
 from sqlalchemy.orm import selectinload 
 
 from backend.api.models import Match, Team, TeamCompetition
-from services.base import BaseService
+from backend.services.base import BaseService
 
 class LeagueService(BaseService):
     

@@ -47,6 +47,15 @@ export default function LeagueTable({ tableData, currentLeague }) {
     return '';
   }
 
+  const handleRowClick = (team) => {
+    navigate(`/team/${compId}/${seasonId}/${team.team_id}`, {
+      state: {
+        teamName: team.team_name,
+        currentLeague: currentLeague,
+      }
+    });
+  };
+
   return (
     <div className={styles['table-container']}>
 
@@ -71,14 +80,15 @@ export default function LeagueTable({ tableData, currentLeague }) {
               <tr 
                 key={team.team_id} 
                 className={rowClass ? styles[rowClass] : ''}
-                onClick={() => 
-                  navigate(`/team/${compId}/${seasonId}/${team.team_id}`, {
-                    state: { 
-                      teamName: team.team_name,
-                      currentLeague: currentLeague,
-                    }
-                  })
-                }
+                onClick={() => handleRowClick(team)}
+                role="link"
+                tabIndex="0"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleRowClick(team);
+                  }
+                }}
               >
                 <td>{index + 1}</td>
                 <td className={styles['team-cell']}>

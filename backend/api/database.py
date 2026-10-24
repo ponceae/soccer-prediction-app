@@ -1,7 +1,10 @@
+from pathlib import Path
+
 from sqlmodel import create_engine, Session
 
-sqlite_file_name = 'soccer.db'
-sqlite_url = f'sqlite:///{sqlite_file_name}'
+BASE_DIR = Path(__file__).resolve().parents[1]
+sqlite_file_path = BASE_DIR / 'soccer.db'
+sqlite_url = f'sqlite:///{sqlite_file_path.as_posix()}'
 
 engine = create_engine(
     sqlite_url, 

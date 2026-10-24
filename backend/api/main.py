@@ -7,12 +7,12 @@ from backend.api.database import engine, get_session
 import backend.api.models as models, backend.api.schemas as schemas
 import backend.api.responses as responses
 
-from services import globals
-from services.base import HomeAwayID
-from services.league import LeagueService
-from services.matchup import MatchupService
-from services.prediction import PredictionEngine
-from services.team import TeamService
+import backend.services.globals as globals
+from backend.services.base import HomeAwayID
+from backend.services.league import LeagueService
+from backend.services.matchup import MatchupService
+from backend.services.prediction import PredictionEngine
+from backend.services.team import TeamService
 
 # +==============+
 #   Route Setup

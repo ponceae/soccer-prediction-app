@@ -14,7 +14,7 @@ export default function LeagueLayout({ currentLeague }) {
   const currentTab = location.pathname.split('/')[4] || 'table';
 
   return (
-    <div className="league-layout">
+    <section className="league-layout">
 
       <div className="table-navigation">
         <button className="back-btn" onClick={() => navigate('/')}>
@@ -22,7 +22,7 @@ export default function LeagueLayout({ currentLeague }) {
         </button>
       </div>
 
-      <div className={styles['league-header-container']}>
+      <header className={styles['league-header-container']}>
         <div className={styles['league-title-group']}>
           <img
             src={`/logos/competitions/${compId}.svg`}
@@ -30,10 +30,10 @@ export default function LeagueLayout({ currentLeague }) {
             alt={`${currentLeague?.name} logo`}
             onError={(e) => { e.target.style.display= 'none' }}
           />
-          <div className={styles['league-text']}>
+          <hgroup className={styles['league-text']}>
             <h2>{currentLeague?.name} {displayYear}</h2>
             <p className={styles['country-subtitle']}>{currentLeague.country}</p>
-          </div>
+          </hgroup>
         </div>
         
         <SeasonSelector 
@@ -45,7 +45,7 @@ export default function LeagueLayout({ currentLeague }) {
             })
           }
         />
-      </div>
+      </header>
 
       <nav className={styles['league-tabs']}>
         <NavLink 
@@ -89,9 +89,9 @@ export default function LeagueLayout({ currentLeague }) {
         )}
       </nav>
 
-      <div className={styles['league-content']}>
+      <section className={styles['league-content']}>
         <Outlet/>
-      </div>
-    </div>
+      </section>
+    </section>
   );
 }

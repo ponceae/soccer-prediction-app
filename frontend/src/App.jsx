@@ -1,15 +1,15 @@
-import { useCallback, useState, useEffect } from 'react';
-import { Navigate, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { Navigate, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 
 import './App.css';
 import Sidebar from './components/Sidebar';
+import KnockoutBracket from './components/KnockoutBracket';
 import LeagueLayout from './components/LeagueLayout';
 import LeagueTable from './components/LeagueTable';
-import TeamProfile from './components/TeamProfile';
 import LeagueSummary from './components/LeagueSummary';
 import Matchups from './components/Matchups';
 import MatchupProfile from './components/MatchupProfile';
-import KnockoutBracket from './components/KnockoutBracket';
+import TeamProfile from './components/TeamProfile';
 
 export default function App() {
   const [menuData, setMenuData] = useState(null);
@@ -98,7 +98,7 @@ export default function App() {
           <h1>Soccer Prediction Model</h1>
         </header>
 
-        <div id="tableContainer">
+        <section id="tableContainer">
           {error && <p className="status-message error">{error}</p>}
         
           <Routes>
@@ -127,7 +127,7 @@ export default function App() {
             <Route path="/matchup/:compId/:seasonId/:matchId" element={<MatchupProfile/>}/>
           </Routes>
         
-        </div>
+        </section>
       </main>
     </div>
   );

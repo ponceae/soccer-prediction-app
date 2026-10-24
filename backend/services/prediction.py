@@ -1,7 +1,7 @@
 import math
 
-from services.base import BaseService, HomeAwayID
-from services.team import TeamService
+from backend.services.base import BaseService, HomeAwayID
+from backend.services.team import TeamService
 
 MAX_GOAL_THRESHOLD = 8
 

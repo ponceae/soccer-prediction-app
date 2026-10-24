@@ -1,5 +1,4 @@
 from collections import defaultdict
-from typing import Sequence
 from sqlmodel import col, select, Session
 
 import backend.api.models as models
